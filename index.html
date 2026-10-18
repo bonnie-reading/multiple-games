@@ -2,8 +2,15 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <title>萌廚排球：九九乘法大冒險 (豪華音效版)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-select=none, touch-action=manipulation">
+  <title>萌廚排球：九九乘法大冒險 (手機/平板觸控版)</title>
   <style>
+    * {
+      box-sizing: border-box;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
     body {
       margin: 0;
       padding: 0;
@@ -12,72 +19,135 @@
       flex-direction: column;
       align-items: center;
       font-family: 'Comic Sans MS', 'Microsoft JhengHei', sans-serif;
-      user-select: none;
+      touch-action: manipulation;
+      overflow-x: hidden;
     }
     header {
-      margin-top: 10px;
+      margin-top: 6px;
       text-align: center;
+      width: 95%;
+      max-width: 860px;
     }
     .score-board {
       background: #ffffff;
-      padding: 8px 30px;
-      border-radius: 40px;
+      padding: 6px 16px;
+      border-radius: 30px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.12);
       display: flex;
-      gap: 30px;
+      justify-content: space-around;
       align-items: center;
       margin-bottom: 6px;
+      flex-wrap: wrap;
+      gap: 8px;
     }
     .question-title {
-      font-size: 34px;
+      font-size: 28px;
       color: #d63031;
       font-weight: 900;
       background: #ffeaa7;
-      padding: 4px 28px;
-      border-radius: 24px;
+      padding: 4px 20px;
+      border-radius: 20px;
       border: 3px dashed #e17055;
     }
     .points {
-      font-size: 19px;
+      font-size: 16px;
       font-weight: bold;
       color: #2d3436;
     }
     .timer {
-      font-size: 20px;
+      font-size: 16px;
       font-weight: 900;
       color: #e17055;
       background: #fff3cd;
-      padding: 4px 14px;
+      padding: 4px 12px;
       border-radius: 12px;
       border: 2px solid #ffbe76;
     }
     .controls-bar {
       display: flex;
-      gap: 16px;
+      gap: 10px;
       align-items: center;
-      margin-bottom: 6px;
-      font-size: 14px;
+      justify-content: center;
+      margin-bottom: 4px;
+      font-size: 13px;
       color: #2d3436;
       font-weight: bold;
     }
     select {
-      padding: 4px 10px;
+      padding: 4px 8px;
       border-radius: 8px;
-      font-size: 14px;
+      font-size: 13px;
       border: 2px solid #0984e3;
       outline: none;
+      background: #fff;
     }
     #gameWrapper {
       position: relative;
+      width: 95vw;
+      max-width: 860px;
     }
     canvas {
+      width: 100%;
+      height: auto;
       background: linear-gradient(to bottom, #ffeaa7 0%, #ffbe76 100%);
-      border: 6px solid #fdcb6e;
-      border-radius: 24px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+      border: 5px solid #fdcb6e;
+      border-radius: 20px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
       display: block;
+      touch-action: none;
     }
-    /* 結算結算視窗 */
+    
+    /* 手機/平板專用虛擬觸控按鈕區 */
+    #touchControls {
+      width: 95vw;
+      max-width: 860px;
+      margin-top: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 10px;
+    }
+    .d-pad {
+      display: flex;
+      gap: 14px;
+    }
+    .touch-btn {
+      width: 68px;
+      height: 68px;
+      border-radius: 50%;
+      border: none;
+      background: #ffffff;
+      box-shadow: 0 6px 12px rgba(0,0,0,0.2), inset 0 -4px 0 rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 26px;
+      font-weight: bold;
+      color: #2d3436;
+      cursor: pointer;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      transition: transform 0.05s, background-color 0.05s;
+    }
+    .touch-btn:active, .touch-btn.active {
+      transform: translateY(4px);
+      background: #dfe6e9;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+    .jump-btn {
+      width: 80px;
+      height: 80px;
+      background: #ff7675;
+      color: #ffffff;
+      font-size: 20px;
+      font-weight: 900;
+      box-shadow: 0 6px 12px rgba(235, 77, 75, 0.4), inset 0 -4px 0 rgba(0,0,0,0.15);
+    }
+    .jump-btn:active, .jump-btn.active {
+      background: #d63031;
+    }
+
+    /* 結算彈窗 */
     #modalOverlay {
       position: absolute;
       top: 0;
@@ -85,7 +155,7 @@
       width: 100%;
       height: 100%;
       background: rgba(0, 0, 0, 0.65);
-      border-radius: 24px;
+      border-radius: 20px;
       display: none;
       flex-direction: column;
       justify-content: center;
@@ -94,55 +164,26 @@
     }
     .modal-box {
       background: #ffffff;
-      padding: 24px 40px;
-      border-radius: 24px;
+      padding: 20px 30px;
+      border-radius: 20px;
       text-align: center;
       box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-      border: 5px solid #ffbe76;
-      animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      border: 4px solid #ffbe76;
+      max-width: 85%;
     }
-    @keyframes popIn {
-      0% { transform: scale(0.6); opacity: 0; }
-      100% { transform: scale(1); opacity: 1; }
-    }
-    .medal-icon {
-      font-size: 65px;
-      margin-bottom: 4px;
-    }
-    .modal-box h2 {
-      margin: 0;
-      font-size: 28px;
-      color: #2d3436;
-    }
-    .modal-box p {
-      font-size: 18px;
-      margin: 8px 0;
-      color: #636e72;
-    }
+    .medal-icon { font-size: 55px; margin-bottom: 2px; }
+    .modal-box h2 { margin: 0; font-size: 24px; color: #2d3436; }
+    .modal-box p { font-size: 16px; margin: 6px 0; color: #636e72; }
     .restart-btn {
-      margin-top: 14px;
-      padding: 10px 26px;
-      font-size: 18px;
+      margin-top: 10px;
+      padding: 8px 22px;
+      font-size: 16px;
       font-weight: bold;
       color: #fff;
       background: #10ac84;
       border: none;
-      border-radius: 30px;
+      border-radius: 25px;
       cursor: pointer;
-      box-shadow: 0 5px 15px rgba(16, 172, 132, 0.4);
-      transition: transform 0.1s;
-    }
-    .restart-btn:hover {
-      transform: scale(1.05);
-      background: #1dd1a1;
-    }
-    .tips {
-      margin-top: 6px;
-      font-size: 14px;
-      color: #2d3436;
-      background: rgba(255,255,255,0.9);
-      padding: 6px 18px;
-      border-radius: 12px;
     }
   </style>
 </head>
@@ -152,25 +193,25 @@
     <div class="score-board">
       <div class="timer" id="timerDisplay">⏳ 倒數: 60s</div>
       <div class="question-title" id="mathQuestion">7 × 8 = ?</div>
-      <div class="points" id="scoreDisplay">⭐ 主廚得分: 0</div>
-      <div class="points" id="comboDisplay">🔥 連續答對: 0</div>
+      <div class="points" id="scoreDisplay">⭐ 得分: 0</div>
+      <div class="points" id="comboDisplay">🔥 連續: 0</div>
     </div>
   </header>
 
   <div class="controls-bar">
     <label for="speedSelect">☁️ 漂浮速度：</label>
     <select id="speedSelect">
-      <option value="0.75" selected>超悠閒慢速（推薦國小初學）</option>
+      <option value="0.75" selected>超悠閒慢速（適合平板/手機）</option>
       <option value="1.0">標準排球節奏</option>
       <option value="1.25">小敏捷挑戰</option>
     </select>
-    <span>操作：按【A】向左走、【D】向右走、【W】跳起頂球</span>
   </div>
 
   <div id="gameWrapper">
+    <!-- 內部邏輯維持 860x460，透過 CSS 等比例在行動裝置縮放 -->
     <canvas id="gameCanvas" width="860" height="460"></canvas>
 
-    <!-- 結算彈跳視窗 -->
+    <!-- 結算視窗 -->
     <div id="modalOverlay">
       <div class="modal-box">
         <div class="medal-icon" id="medalIcon">🥇</div>
@@ -182,13 +223,18 @@
     </div>
   </div>
 
-  <div class="tips">
-    💡 提示：對面的可愛伊布主廚會把題目食材高高拋過來，觀察地面光圈，<b>頂到正確數字的食材</b>就成功出餐！
+  <!-- 行動平板與手機虛擬按鈕 -->
+  <div id="touchControls">
+    <div class="d-pad">
+      <button class="touch-btn" id="btnLeft">◀</button>
+      <button class="touch-btn" id="btnRight">▶</button>
+    </div>
+    <button class="touch-btn jump-btn" id="btnJump">跳躍 ⬆️</button>
   </div>
 
 <script>
 /* ========================
-   1. 免外部音檔的 Web Audio 音效引擎
+   1. 原生 Web Audio 音效引擎
    ======================== */
 const AudioEngine = {
   ctx: null,
@@ -201,92 +247,73 @@ const AudioEngine = {
       this.ctx.resume();
     }
   },
-  // 跳躍音效 (彈簧波浪)
   playJump() {
     this.init();
     const now = this.ctx.currentTime;
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
-
     osc.type = 'sine';
     osc.frequency.setValueAtTime(260, now);
     osc.frequency.exponentialRampToValueAtTime(580, now + 0.15);
-
     gain.gain.setValueAtTime(0.2, now);
     gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
-
     osc.connect(gain);
     gain.connect(this.ctx.destination);
     osc.start(now);
     osc.stop(now + 0.16);
   },
-  // 發球氣流聲
   playServe() {
     this.init();
     const now = this.ctx.currentTime;
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
-
     osc.type = 'triangle';
     osc.frequency.setValueAtTime(320, now);
     osc.frequency.exponentialRampToValueAtTime(700, now + 0.22);
-
     gain.gain.setValueAtTime(0.18, now);
     gain.gain.linearRampToValueAtTime(0.01, now + 0.22);
-
     osc.connect(gain);
     gain.connect(this.ctx.destination);
     osc.start(now);
     osc.stop(now + 0.23);
   },
-  // 答對頂球音效 (清脆大三和弦叮咚出餐聲)
   playCorrect() {
     this.init();
-    const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+    const notes = [523.25, 659.25, 783.99, 1046.50];
     notes.forEach((freq, idx) => {
       const now = this.ctx.currentTime + idx * 0.06;
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
-
       osc.type = 'sine';
       osc.frequency.setValueAtTime(freq, now);
-
       gain.gain.setValueAtTime(0.22, now);
       gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
-
       osc.connect(gain);
       gain.connect(this.ctx.destination);
       osc.start(now);
       osc.stop(now + 0.36);
     });
   },
-  // 答錯音效 (低沉短促兩聲)
   playWrong() {
     this.init();
     const now = this.ctx.currentTime;
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
-
     osc.type = 'sawtooth';
     osc.frequency.setValueAtTime(160, now);
     osc.frequency.linearRampToValueAtTime(100, now + 0.25);
-
     gain.gain.setValueAtTime(0.25, now);
     gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
-
     osc.connect(gain);
     gain.connect(this.ctx.destination);
     osc.start(now);
     osc.stop(now + 0.26);
   },
-  // 結算通關勝利號角
   playFanfare() {
     this.init();
     const chords = [
-      { f: 523.25, t: 0.0 },
-      { f: 659.25, t: 0.12 },
-      { f: 783.99, t: 0.24 },
-      { f: 1046.50, t: 0.40 }
+      { f: 523.25, t: 0.0 }, { f: 659.25, t: 0.12 },
+      { f: 783.99, t: 0.24 }, { f: 1046.50, t: 0.40 }
     ];
     chords.forEach(c => {
       const now = this.ctx.currentTime + c.t;
@@ -305,7 +332,7 @@ const AudioEngine = {
 };
 
 /* ========================
-   2. 遊戲核心邏輯
+   2. 遊戲參數與狀態
    ======================== */
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -321,7 +348,6 @@ let streak = 0;
 let maxStreak = 0;
 let correctCount = 0;
 
-// 倒數計時 60 秒
 let timeLeft = 60;
 let timerInterval = null;
 let isGameOver = false;
@@ -333,16 +359,84 @@ let feedbackText = "";
 let feedbackTimer = 0;
 let feedbackColor = "#27ae60";
 
-const keys = {};
+// 輸入狀態集合（鍵盤 + 螢幕虛擬鍵整合）
+const input = {
+  left: false,
+  right: false,
+  jump: false
+};
+
+// 鍵盤監聽
 window.addEventListener('keydown', (e) => {
   AudioEngine.init();
-  keys[e.code] = true;
+  if (e.code === 'KeyA' || e.code === 'ArrowLeft') input.left = true;
+  if (e.code === 'KeyD' || e.code === 'ArrowRight') input.right = true;
+  if (e.code === 'KeyW' || e.code === 'ArrowUp' || e.code === 'Space') input.jump = true;
 });
 window.addEventListener('keyup', (e) => {
-  keys[e.code] = false;
+  if (e.code === 'KeyA' || e.code === 'ArrowLeft') input.left = false;
+  if (e.code === 'KeyD' || e.code === 'ArrowRight') input.right = false;
+  if (e.code === 'KeyW' || e.code === 'ArrowUp' || e.code === 'Space') input.jump = false;
 });
 
-// 開始倒數計時
+/* ========================
+   3. 手機/平板 虛擬觸控與手勢綁定
+   ======================== */
+function bindTouchButton(elementId, actionKey) {
+  const btn = document.getElementById(elementId);
+  
+  const startHandler = (e) => {
+    e.preventDefault();
+    AudioEngine.init();
+    input[actionKey] = true;
+    btn.classList.add('active');
+  };
+  
+  const endHandler = (e) => {
+    e.preventDefault();
+    input[actionKey] = false;
+    btn.classList.remove('active');
+  };
+
+  btn.addEventListener('touchstart', startHandler, { passive: false });
+  btn.addEventListener('touchend', endHandler, { passive: false });
+  btn.addEventListener('touchcancel', endHandler, { passive: false });
+
+  // 同時相容滑鼠點擊
+  btn.addEventListener('mousedown', startHandler);
+  btn.addEventListener('mouseup', endHandler);
+  btn.addEventListener('mouseleave', endHandler);
+}
+
+bindTouchButton('btnLeft', 'left');
+bindTouchButton('btnRight', 'right');
+bindTouchButton('btnJump', 'jump');
+
+// 畫布直接點擊跟隨（適合直覺觸控）
+canvas.addEventListener('touchstart', (e) => {
+  AudioEngine.init();
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width / rect.width;
+  const touchX = (e.touches[0].clientX - rect.left) * scaleX;
+  
+  // 點擊玩家左側往左走，點擊玩家右側往右走
+  if (touchX < player.x - 15) {
+    input.left = true;
+    input.right = false;
+  } else if (touchX > player.x + 15 && touchX < 460) {
+    input.right = true;
+    input.left = false;
+  }
+}, { passive: true });
+
+canvas.addEventListener('touchend', () => {
+  input.left = false;
+  input.right = false;
+}, { passive: true });
+
+/* ========================
+   4. 計時器與結算邏輯
+   ======================== */
 function startTimer() {
   clearInterval(timerInterval);
   timeLeft = 60;
@@ -362,15 +456,12 @@ function startTimer() {
   }, 1000);
 }
 
-// 結束結算
 function endGame() {
   clearInterval(timerInterval);
   isGameOver = true;
   roundActive = false;
-
   AudioEngine.playFanfare();
 
-  // 判斷獎牌階級
   let medal = "🥉";
   let title = "烘焙見習生！";
   if (score >= 80) {
@@ -394,7 +485,6 @@ function endGame() {
   document.getElementById('modalOverlay').style.display = 'flex';
 }
 
-// 重新開始
 document.getElementById('restartBtn').addEventListener('click', () => {
   document.getElementById('modalOverlay').style.display = 'none';
   document.getElementById('timerDisplay').style.color = '#e17055';
@@ -402,22 +492,20 @@ document.getElementById('restartBtn').addEventListener('click', () => {
   streak = 0;
   maxStreak = 0;
   correctCount = 0;
-  document.getElementById('scoreDisplay').innerText = `⭐ 主廚得分: 0`;
-  document.getElementById('comboDisplay').innerText = `🔥 連續答對: 0`;
+  document.getElementById('scoreDisplay').innerText = `⭐ 得分: 0`;
+  document.getElementById('comboDisplay').innerText = `🔥 連續: 0`;
   startTimer();
   setupNewRound();
 });
 
-// 題目與發球
 function setupNewRound() {
   if (isGameOver) return;
 
-  num1 = Math.floor(Math.random() * 8) + 2; // 2 ~ 9
+  num1 = Math.floor(Math.random() * 8) + 2;
   num2 = Math.floor(Math.random() * 8) + 2;
   rightAnswer = num1 * num2;
   document.getElementById('mathQuestion').innerText = `${num1} × ${num2} = ?`;
 
-  // 對手 NPC 觸發拋球揮手動作
   npcChef.serveAnimationTimer = 25;
   AudioEngine.playServe();
 
@@ -445,10 +533,8 @@ function setupNewRound() {
 }
 
 /* ========================
-   3. 角色繪製類別
+   5. 角色與物體
    ======================== */
-
-// 玩家廚師 (黃色皮卡廚)
 class CutePikachuChef {
   constructor(x, y) {
     this.x = x;
@@ -460,11 +546,10 @@ class CutePikachuChef {
   }
 
   update() {
-    if (keys['KeyA']) this.x -= 5.5;
-    if (keys['KeyD']) this.x += 5.5;
+    if (input.left) this.x -= 5.5;
+    if (input.right) this.x += 5.5;
 
-    // 跳躍
-    if (keys['KeyW'] && this.isGrounded) {
+    if (input.jump && this.isGrounded) {
       this.vy = -9.2;
       this.isGrounded = false;
       AudioEngine.playJump();
@@ -558,7 +643,7 @@ class CutePikachuChef {
     ctx.arc(cx + 20, cy + 3, 6.5, 0, Math.PI * 2);
     ctx.fill();
 
-    // 小嘴巴
+    // 嘴巴
     ctx.fillStyle = '#e17055';
     ctx.beginPath();
     ctx.arc(cx, cy - 1, 2, 0, Math.PI * 2);
@@ -584,7 +669,6 @@ class CutePikachuChef {
   }
 }
 
-// 對手 NPC (奶茶色伊布小廚師)
 class CuteEnemyNPC {
   constructor(x, y) {
     this.x = x;
@@ -596,42 +680,33 @@ class CuteEnemyNPC {
 
   update() {
     this.animTimer += 0.05;
-    if (this.serveAnimationTimer > 0) {
-      this.serveAnimationTimer--;
-    }
+    if (this.serveAnimationTimer > 0) this.serveAnimationTimer--;
   }
 
   draw() {
     ctx.save();
-    // 待機輕微呼吸浮動
     const bounceY = Math.sin(this.animTimer) * 3;
     const cx = this.x;
     const cy = this.y + bounceY;
 
-    // 蓬鬆長耳朵
-    ctx.fillStyle = '#c7ecee';
-    ctx.fillStyle = '#cd84f1'; // 可愛紫粉大耳
+    ctx.fillStyle = '#cd84f1';
     ctx.strokeStyle = '#2d3436';
     ctx.lineWidth = 3;
 
-    // 左耳
     ctx.beginPath();
     ctx.ellipse(cx - 20, cy - 32, 9, 24, -0.5, 0, Math.PI * 2);
     ctx.fill(); ctx.stroke();
 
-    // 右耳
     ctx.beginPath();
     ctx.ellipse(cx + 20, cy - 32, 9, 24, 0.5, 0, Math.PI * 2);
     ctx.fill(); ctx.stroke();
 
-    // 圓滾身體
     ctx.beginPath();
     ctx.arc(cx, cy, this.radius, 0, Math.PI * 2);
-    ctx.fillStyle = '#e056fd'; // 柔和夢幻粉紫
+    ctx.fillStyle = '#e056fd';
     ctx.fill();
     ctx.stroke();
 
-    // 可愛廚師圍裙
     ctx.beginPath();
     ctx.arc(cx, cy + 8, this.radius * 0.72, 0, Math.PI);
     ctx.fillStyle = '#ffffff';
@@ -640,7 +715,6 @@ class CuteEnemyNPC {
     ctx.lineWidth = 2;
     ctx.stroke();
 
-    // 快樂瞇瞇笑眼
     ctx.strokeStyle = '#2d3436';
     ctx.lineWidth = 3;
     ctx.beginPath();
@@ -648,28 +722,23 @@ class CuteEnemyNPC {
     ctx.arc(cx + 10, cy - 4, 5, Math.PI, 0);
     ctx.stroke();
 
-    // 粉紅腮紅
     ctx.fillStyle = '#ff9ff3';
     ctx.beginPath();
     ctx.arc(cx - 18, cy + 5, 6, 0, Math.PI * 2);
     ctx.arc(cx + 18, cy + 5, 6, 0, Math.PI * 2);
     ctx.fill();
 
-    // 拋球揮手動作 (當有發球時計時拋手)
     ctx.fillStyle = '#e056fd';
     ctx.strokeStyle = '#2d3436';
     ctx.lineWidth = 2.5;
     ctx.beginPath();
     if (this.serveAnimationTimer > 0) {
-      // 揮臂發球朝上
       ctx.ellipse(cx - 28, cy - 15, 8, 16, -0.8, 0, Math.PI * 2);
     } else {
-      // 乖巧放在身邊
       ctx.ellipse(cx - 26, cy + 12, 7, 12, 0.2, 0, Math.PI * 2);
     }
     ctx.fill(); ctx.stroke();
 
-    // 可愛草莓廚師帽
     ctx.fillStyle = '#ffffff';
     ctx.strokeStyle = '#2d3436';
     ctx.lineWidth = 2.5;
@@ -680,13 +749,11 @@ class CuteEnemyNPC {
     ctx.arc(cx, cy - this.radius - 16, 17, 0, Math.PI * 2);
     ctx.fill();
 
-    // 小櫻桃點綴帽子
     ctx.fillStyle = '#ff4757';
     ctx.beginPath();
     ctx.arc(cx, cy - this.radius - 28, 5, 0, Math.PI * 2);
     ctx.fill();
 
-    // 名牌「對手」
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 12px "Microsoft JhengHei", Arial';
     ctx.textAlign = 'center';
@@ -696,7 +763,6 @@ class CuteEnemyNPC {
   }
 }
 
-// 飄浮高拋排球食材
 class FloatAnswerBall {
   constructor(targetX, value, isCorrect, delay) {
     this.startX = 710;
@@ -736,7 +802,7 @@ class FloatAnswerBall {
 
     let currentGravity = 0.16;
     if (this.y < 220 && this.vy > -1) {
-      currentGravity = 0.045; // 上層滯空浮力
+      currentGravity = 0.045;
     }
 
     this.vy += currentGravity * speedFactor;
@@ -755,13 +821,12 @@ class FloatAnswerBall {
     if (this.delay > 0) return;
 
     ctx.save();
-    // 地面指引光圈
+    // 投影落點
     ctx.beginPath();
     ctx.ellipse(this.x, GROUND_Y, this.radius * 0.85, 7, 0, 0, Math.PI * 2);
     ctx.fillStyle = 'rgba(0,0,0,0.15)';
     ctx.fill();
 
-    // 垂直引導虛線
     if (!this.landed && !this.isHit) {
       ctx.beginPath();
       ctx.setLineDash([4, 4]);
@@ -773,7 +838,6 @@ class FloatAnswerBall {
       ctx.setLineDash([]);
     }
 
-    // 泡芙球
     ctx.beginPath();
     ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
     ctx.fillStyle = '#fff475';
@@ -782,13 +846,11 @@ class FloatAnswerBall {
     ctx.strokeStyle = '#ffa502';
     ctx.stroke();
 
-    // 小櫻桃
     ctx.beginPath();
     ctx.arc(this.x, this.y - this.radius + 2, 7, 0, Math.PI * 2);
     ctx.fillStyle = '#ff4757';
     ctx.fill();
 
-    // 數字答案
     ctx.fillStyle = '#2f3542';
     ctx.font = 'bold 24px Arial, sans-serif';
     ctx.textAlign = 'center';
@@ -802,7 +864,6 @@ class FloatAnswerBall {
 const player = new CutePikachuChef(200, GROUND_Y - 32);
 const npcChef = new CuteEnemyNPC(710, GROUND_Y - 32);
 
-// 碰撞判定
 function checkCollisions() {
   if (!roundActive || isGameOver) return;
 
@@ -820,7 +881,6 @@ function checkCollisions() {
       ball.isHit = true;
 
       if (ball.isCorrect) {
-        // 答對加分
         score += 10;
         streak += 1;
         correctCount += 1;
@@ -832,10 +892,9 @@ function checkCollisions() {
         feedbackColor = "#10ac84";
 
         AudioEngine.playCorrect();
-        document.getElementById('scoreDisplay').innerText = `⭐ 主廚得分: ${score}`;
-        document.getElementById('comboDisplay').innerText = `🔥 連續答對: ${streak}`;
+        document.getElementById('scoreDisplay').innerText = `⭐ 得分: ${score}`;
+        document.getElementById('comboDisplay').innerText = `🔥 連續: ${streak}`;
       } else {
-        // 答錯中斷
         streak = 0;
         ball.vx = -3;
         ball.vy = -5;
@@ -843,7 +902,7 @@ function checkCollisions() {
         feedbackColor = "#ee5253";
 
         AudioEngine.playWrong();
-        document.getElementById('comboDisplay').innerText = `🔥 連續答對: 0`;
+        document.getElementById('comboDisplay').innerText = `🔥 連續: 0`;
       }
 
       feedbackTimer = 90;
@@ -853,7 +912,6 @@ function checkCollisions() {
     }
   }
 
-  // 若球全部落地
   const allEnded = foodBalls.every(b => b.delay === 0 && (b.landed || b.isHit));
   if (allEnded && roundActive) {
     streak = 0;
@@ -861,17 +919,15 @@ function checkCollisions() {
     feedbackColor = "#e67e22";
     feedbackTimer = 90;
     AudioEngine.playWrong();
-    document.getElementById('comboDisplay').innerText = `🔥 連續答對: 0`;
+    document.getElementById('comboDisplay').innerText = `🔥 連續: 0`;
     roundActive = false;
     setTimeout(setupNewRound, 1600);
   }
 }
 
-// 主渲染迴圈
 function gameLoop() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // 1. 背景磚紋
   ctx.fillStyle = '#ffeaa7';
   ctx.fillRect(0, 0, canvas.width, GROUND_Y);
 
@@ -883,19 +939,16 @@ function gameLoop() {
     ctx.stroke();
   }
 
-  // 2. 地面
   ctx.fillStyle = '#6ab04c';
   ctx.fillRect(0, GROUND_Y, canvas.width, canvas.height - GROUND_Y);
   ctx.fillStyle = '#badc58';
   ctx.fillRect(0, GROUND_Y, canvas.width, 10);
 
-  // 3. 球網
   ctx.fillStyle = '#dcdde1';
   ctx.fillRect(520, 240, 12, GROUND_Y - 240);
   ctx.fillStyle = '#eb4d4b';
   ctx.fillRect(514, 235, 24, 10);
 
-  // 4. 更新角色與球
   player.update();
   player.draw();
 
@@ -909,11 +962,10 @@ function gameLoop() {
 
   checkCollisions();
 
-  // 5. 提示訊息橫幅
   if (feedbackTimer > 0) {
     feedbackTimer--;
     ctx.save();
-    ctx.font = 'bold 28px "Microsoft JhengHei", Arial';
+    ctx.font = 'bold 26px "Microsoft JhengHei", Arial';
     ctx.fillStyle = feedbackColor;
     ctx.textAlign = 'center';
     ctx.fillText(feedbackText, canvas.width / 2, 75);
@@ -923,7 +975,6 @@ function gameLoop() {
   requestAnimationFrame(gameLoop);
 }
 
-// 啟動首回合
 startTimer();
 setupNewRound();
 gameLoop();
