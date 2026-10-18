@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-select=none, touch-action=manipulation">
-  <title>萌廚排球：反應直覺特訓版</title>
+  <title>萌廚排球：九九乘法特訓版</title>
   <style>
     * {
       box-sizing: border-box;
@@ -70,26 +70,17 @@
       border-radius: 12px;
       font-size: 14px;
       display: inline-block;
-      transition: transform 0.15s;
     }
-    .controls-bar {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 4px;
+    .pause-btn-top {
+      background: #0984e3;
+      color: white;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 20px;
       font-size: 13px;
-      color: #2d3436;
       font-weight: bold;
-      flex-wrap: wrap;
-    }
-    select {
-      padding: 4px 8px;
-      border-radius: 8px;
-      font-size: 13px;
-      border: 2px solid #0984e3;
-      outline: none;
-      background: #fff;
+      cursor: pointer;
+      box-shadow: 0 3px 6px rgba(9, 132, 227, 0.3);
     }
     #gameWrapper {
       position: relative;
@@ -106,7 +97,110 @@
       display: block;
       touch-action: none;
     }
-    
+
+    /* 懸浮遮罩面板 (準備設定 & 結算) */
+    .overlay-screen {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.72);
+      border-radius: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      backdrop-filter: blur(5px);
+      z-index: 10;
+    }
+    .panel-box {
+      background: #ffffff;
+      padding: 22px 28px;
+      border-radius: 24px;
+      text-align: center;
+      box-shadow: 0 12px 35px rgba(0,0,0,0.35);
+      border: 5px solid #ffbe76;
+      width: 88%;
+      max-width: 480px;
+      animation: popIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes popIn {
+      0% { transform: scale(0.7); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .panel-title {
+      margin: 0 0 14px 0;
+      font-size: 24px;
+      color: #2d3436;
+      font-weight: 900;
+    }
+    .setting-group {
+      margin-bottom: 12px;
+      text-align: left;
+    }
+    .setting-label {
+      font-size: 14px;
+      font-weight: bold;
+      color: #636e72;
+      margin-bottom: 6px;
+      display: block;
+    }
+    .btn-options {
+      display: flex;
+      gap: 8px;
+    }
+    .opt-btn {
+      flex: 1;
+      padding: 8px 4px;
+      border: 2px solid #dfe6e9;
+      background: #f8f9fa;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: bold;
+      color: #2d3436;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .opt-btn.selected {
+      border-color: #e17055;
+      background: #ffeaa7;
+      color: #d63031;
+      transform: scale(1.02);
+      box-shadow: 0 3px 8px rgba(225, 112, 85, 0.25);
+    }
+    .start-big-btn {
+      width: 100%;
+      margin-top: 10px;
+      padding: 12px;
+      font-size: 19px;
+      font-weight: 900;
+      color: #fff;
+      background: #10ac84;
+      border: none;
+      border-radius: 30px;
+      cursor: pointer;
+      box-shadow: 0 6px 14px rgba(16, 172, 132, 0.4);
+      transition: transform 0.1s, background-color 0.1s;
+    }
+    .start-big-btn:hover { background: #1dd1a1; }
+    .start-big-btn:active { transform: scale(0.98); }
+
+    /* 結算特有元件 */
+    .medal-icon { font-size: 55px; margin-bottom: 2px; }
+    .missed-list {
+      background: #ffeaa7;
+      border-radius: 10px;
+      padding: 6px 12px;
+      margin: 8px 0;
+      font-size: 13px;
+      color: #d63031;
+      font-weight: bold;
+      text-align: left;
+      max-height: 70px;
+      overflow-y: auto;
+    }
+
     /* 虛擬觸控按鈕 */
     #touchControls {
       width: 95vw;
@@ -117,10 +211,7 @@
       align-items: center;
       padding: 0 10px;
     }
-    .d-pad {
-      display: flex;
-      gap: 14px;
-    }
+    .d-pad { display: flex; gap: 14px; }
     .touch-btn {
       width: 68px;
       height: 68px;
@@ -151,57 +242,8 @@
       font-weight: 900;
       box-shadow: 0 6px 12px rgba(235, 77, 75, 0.4), inset 0 -4px 0 rgba(0,0,0,0.15);
     }
-    .jump-btn:active, .jump-btn.active {
-      background: #d63031;
-    }
+    .jump-btn:active, .jump-btn.active { background: #d63031; }
 
-    /* 結算彈窗 */
-    #modalOverlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.65);
-      border-radius: 20px;
-      display: none;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      backdrop-filter: blur(4px);
-    }
-    .modal-box {
-      background: #ffffff;
-      padding: 20px 30px;
-      border-radius: 20px;
-      text-align: center;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-      border: 4px solid #ffbe76;
-      max-width: 85%;
-    }
-    .medal-icon { font-size: 55px; margin-bottom: 2px; }
-    .modal-box h2 { margin: 0; font-size: 24px; color: #2d3436; }
-    .modal-box p { font-size: 16px; margin: 6px 0; color: #636e72; }
-    .missed-list {
-      background: #ffeaa7;
-      border-radius: 10px;
-      padding: 6px 12px;
-      margin: 8px 0;
-      font-size: 14px;
-      color: #d63031;
-      font-weight: bold;
-    }
-    .restart-btn {
-      margin-top: 10px;
-      padding: 8px 24px;
-      font-size: 16px;
-      font-weight: bold;
-      color: #fff;
-      background: #10ac84;
-      border: none;
-      border-radius: 25px;
-      cursor: pointer;
-    }
     .tips {
       margin-top: 6px;
       font-size: 13px;
@@ -217,43 +259,55 @@
 
   <header>
     <div class="score-board">
+      <button class="pause-btn-top" id="btnPauseGame">⏸️ 設定 / 暫停</button>
       <div class="timer" id="timerDisplay">⏳ 倒數: 60s</div>
-      <div class="question-title" id="mathQuestion">7 × 8 = ?</div>
+      <div class="question-title" id="mathQuestion">準備中...</div>
       <div class="points" id="scoreDisplay">⭐ 得分: 0</div>
       <div class="points" id="comboDisplay">🔥 <span class="combo-badge" id="comboBadge">連擊: 0</span></div>
     </div>
   </header>
 
-  <div class="controls-bar">
-    <div>
-      <label for="modeSelect">🎯 練習範圍：</label>
-      <select id="modeSelect">
-        <option value="boss" selected>🔥 大魔王特訓 (專攻 6~9 段)</option>
-        <option value="all">🌟 全段隨機 (2~9 段全面練習)</option>
-      </select>
-    </div>
-    <div>
-      <label for="speedSelect">☁️ 初始速度：</label>
-      <select id="speedSelect">
-        <option value="0.75" selected>超悠閒慢速</option>
-        <option value="0.95">標準排球節奏</option>
-        <option value="1.15">高手敏捷反應</option>
-      </select>
-    </div>
-  </div>
-
   <div id="gameWrapper">
     <canvas id="gameCanvas" width="860" height="460"></canvas>
 
-    <!-- 結算視窗 -->
-    <div id="modalOverlay">
-      <div class="modal-box">
+    <!-- 1. 遊戲開始前 / 暫停 / 重新挑戰時的設定面板 -->
+    <div id="setupModal" class="overlay-screen">
+      <div class="panel-box">
+        <h2 class="panel-title" id="setupModalTitle">🍳 主廚準備出餐囉！</h2>
+        
+        <!-- 難易度選擇 -->
+        <div class="setting-group">
+          <span class="setting-label">🎯 選擇難度（題庫段數）：</span>
+          <div class="btn-options" id="diffOptions">
+            <button class="opt-btn" data-val="easy">🌱 初階基礎<br>(2~5段)</button>
+            <button class="opt-btn selected" data-val="boss">🔥 大魔王特訓<br>(6~9段)</button>
+            <button class="opt-btn" data-val="all">🌟 全段挑戰<br>(2~9段)</button>
+          </div>
+        </div>
+
+        <!-- 速度選擇 -->
+        <div class="setting-group">
+          <span class="setting-label">☁️ 選擇食材飄浮速度：</span>
+          <div class="btn-options" id="speedOptions">
+            <button class="opt-btn selected" data-val="0.7">超慢飄浮<br>(安心算)</button>
+            <button class="opt-btn" data-val="0.95">標準排球<br>(順暢)</button>
+            <button class="opt-btn" data-val="1.2">敏捷衝刺<br>(反應挑戰)</button>
+          </div>
+        </div>
+
+        <button class="start-big-btn" id="btnConfirmStart">🚀 開始挑戰出餐！</button>
+      </div>
+    </div>
+
+    <!-- 2. 60秒結算面板 -->
+    <div id="resultModal" class="overlay-screen" style="display: none;">
+      <div class="panel-box">
         <div class="medal-icon" id="medalIcon">🥇</div>
-        <h2 id="medalTitle">特級神廚金牌！</h2>
-        <p id="finalScoreText">總得分: 100 分</p>
-        <p id="finalStatsText">答對: 10 題 ｜ 最高連擊: 5 次</p>
-        <div id="missedBox" class="missed-list" style="display:none;"></div>
-        <button class="restart-btn" id="restartBtn">🔄 再挑戰一次</button>
+        <h2 id="medalTitle" style="margin: 0; font-size: 24px; color: #2d3436;">特級神廚金牌！</h2>
+        <p id="finalScoreText" style="font-size: 16px; margin: 6px 0; color: #636e72;">總得分: 100 分</p>
+        <p id="finalStatsText" style="font-size: 15px; margin: 4px 0; color: #636e72;">答對: 10 題 ｜ 最高連擊: 5 次</p>
+        <div id="missedBox" class="missed-list" style="display: none;"></div>
+        <button class="start-big-btn" id="btnRetryFromEnd" style="background:#0984e3;">🔄 再挑戰一次</button>
       </div>
     </div>
   </div>
@@ -268,12 +322,12 @@
   </div>
 
   <div class="tips">
-    ⚡ <b>反應特訓機制</b>：連續答對 3 題以上會啟動連擊加速；答錯的題目會記錄下來並在稍後再次出現複習！
+    💡 提示：按頂端「⏸️ 設定 / 暫停」可隨時調整難度；頂球時大聲喊出答案能更快練成直覺反射！
   </div>
 
 <script>
 /* ========================
-   1. 原生 Web Audio 音效
+   1. 原生 Web Audio 音效引擎
    ======================== */
 const AudioEngine = {
   ctx: null,
@@ -371,18 +425,10 @@ const AudioEngine = {
 };
 
 /* ========================
-   2. 遊戲參數與弱點題庫
+   2. 遊戲參數與狀態
    ======================== */
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
-
-let baseSpeed = 0.75;
-let currentSpeed = 0.75;
-
-document.getElementById('speedSelect').addEventListener('change', (e) => {
-  baseSpeed = parseFloat(e.target.value);
-  currentSpeed = baseSpeed;
-});
 
 const GROUND_Y = 410;
 let score = 0;
@@ -392,9 +438,15 @@ let correctCount = 0;
 
 let timeLeft = 60;
 let timerInterval = null;
+let isPaused = true;      // 預設為暫停（等待設定確認）
 let isGameOver = false;
 
-// 弱點收集池（答錯的題目會暫存於此，優先回訪）
+// 選擇的難度與速度參數
+let selectedDifficulty = 'boss';
+let baseSpeed = 0.7;
+let currentSpeed = 0.7;
+
+// 錯題收集
 let missedQuestionsPool = [];
 let roundHistoryMissed = [];
 
@@ -407,6 +459,224 @@ let feedbackColor = "#27ae60";
 
 const input = { left: false, right: false, jump: false };
 
+/* ========================
+   3. 暫停畫面與選項互動
+   ======================== */
+const setupModal = document.getElementById('setupModal');
+const resultModal = document.getElementById('resultModal');
+
+// 綁定難度選項切換按鈕
+document.querySelectorAll('#diffOptions .opt-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#diffOptions .opt-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedDifficulty = btn.dataset.val;
+  });
+});
+
+// 綁定速度選項切換按鈕
+document.querySelectorAll('#speedOptions .opt-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#speedOptions .opt-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    baseSpeed = parseFloat(btn.dataset.val);
+    currentSpeed = baseSpeed;
+  });
+});
+
+// 點擊「開始挑戰」/「繼續遊戲」
+document.getElementById('btnConfirmStart').addEventListener('click', () => {
+  setupModal.style.display = 'none';
+  isPaused = false;
+  AudioEngine.init();
+
+  if (isGameOver || timeLeft <= 0) {
+    // 全新一局重開
+    startNewGame();
+  } else if (!roundActive && foodBalls.length === 0) {
+    // 首次進入開局
+    startNewGame();
+  } else {
+    // 暫停後繼續
+    resumeTimer();
+  }
+});
+
+// 頂端隨時暫停按鈕
+document.getElementById('btnPauseGame').addEventListener('click', () => {
+  pauseGame();
+});
+
+function pauseGame() {
+  if (isGameOver) return;
+  isPaused = true;
+  clearInterval(timerInterval);
+  document.getElementById('setupModalTitle').innerText = "⏸️ 遊戲暫停中，微調設定：";
+  document.getElementById('btnConfirmStart').innerText = "▶️ 繼續挑戰出餐！";
+  setupModal.style.display = 'flex';
+}
+
+// 結算畫面點擊「再挑戰一次」
+document.getElementById('btnRetryFromEnd').addEventListener('click', () => {
+  resultModal.style.display = 'none';
+  document.getElementById('setupModalTitle').innerText = "🔄 準備再挑戰一次！";
+  document.getElementById('btnConfirmStart').innerText = "🚀 開始全新一局！";
+  setupModal.style.display = 'flex';
+});
+
+function startNewGame() {
+  isGameOver = false;
+  isPaused = false;
+  score = 0;
+  streak = 0;
+  maxStreak = 0;
+  correctCount = 0;
+  currentSpeed = baseSpeed;
+  roundHistoryMissed = [];
+  missedQuestionsPool = [];
+  document.getElementById('scoreDisplay').innerText = `⭐ 得分: 0`;
+  document.getElementById('comboBadge').innerText = `連擊: 0`;
+  document.getElementById('timerDisplay').style.color = '#e17055';
+
+  startTimer();
+  setupNewRound();
+}
+
+function startTimer() {
+  clearInterval(timerInterval);
+  timeLeft = 60;
+  document.getElementById('timerDisplay').innerText = `⏳ 倒數: ${timeLeft}s`;
+
+  timerInterval = setInterval(() => {
+    if (!isPaused && timeLeft > 0) {
+      timeLeft--;
+      document.getElementById('timerDisplay').innerText = `⏳ 倒數: ${timeLeft}s`;
+      if (timeLeft <= 10) {
+        document.getElementById('timerDisplay').style.color = '#d63031';
+      }
+    } else if (timeLeft <= 0) {
+      endGame();
+    }
+  }, 1000);
+}
+
+function resumeTimer() {
+  clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    if (!isPaused && timeLeft > 0) {
+      timeLeft--;
+      document.getElementById('timerDisplay').innerText = `⏳ 倒數: ${timeLeft}s`;
+      if (timeLeft <= 10) {
+        document.getElementById('timerDisplay').style.color = '#d63031';
+      }
+    } else if (timeLeft <= 0) {
+      endGame();
+    }
+  }, 1000);
+}
+
+function endGame() {
+  clearInterval(timerInterval);
+  isGameOver = true;
+  isPaused = true;
+  roundActive = false;
+  AudioEngine.playFanfare();
+
+  let medal = "🥉";
+  let title = "烘焙見習生！";
+  if (score >= 80) {
+    medal = "🥇";
+    title = "五星特級神廚金牌！";
+  } else if (score >= 50) {
+    medal = "🥈";
+    title = "資深星級主廚銀牌！";
+  } else if (score >= 25) {
+    medal = "🥉";
+    title = "烘焙美味銅牌！";
+  } else {
+    medal = "🏅";
+    title = "活力廚房小學徒！";
+  }
+
+  document.getElementById('medalIcon').innerText = medal;
+  document.getElementById('medalTitle').innerText = title;
+  document.getElementById('finalScoreText').innerText = `總得分: ${score} 分`;
+  document.getElementById('finalStatsText').innerText = `答對: ${correctCount} 題 ｜ 最高連擊: ${maxStreak} 次`;
+
+  const missedBox = document.getElementById('missedBox');
+  if (roundHistoryMissed.length > 0) {
+    const uniqueMissed = [...new Set(roundHistoryMissed)];
+    missedBox.innerHTML = `⚠️ 建議多加強的弱點題型：<br>${uniqueMissed.join('、 ')}`;
+    missedBox.style.display = 'block';
+  } else {
+    missedBox.style.display = 'none';
+  }
+
+  resultModal.style.display = 'flex';
+}
+
+/* ========================
+   4. 題目生成與連擊機制
+   ======================== */
+function setupNewRound() {
+  if (isGameOver || isPaused) return;
+
+  // 弱點優先重複
+  if (missedQuestionsPool.length > 0 && Math.random() < 0.45) {
+    const pick = missedQuestionsPool.shift();
+    num1 = pick.a;
+    num2 = pick.b;
+  } else {
+    if (selectedDifficulty === 'easy') {
+      const easyDigits = [2, 3, 4, 5];
+      num1 = easyDigits[Math.floor(Math.random() * easyDigits.length)];
+      num2 = Math.floor(Math.random() * 8) + 2;
+    } else if (selectedDifficulty === 'boss') {
+      const bossDigits = [6, 7, 8, 9];
+      num1 = bossDigits[Math.floor(Math.random() * bossDigits.length)];
+      num2 = Math.floor(Math.random() * 8) + 2;
+    } else {
+      num1 = Math.floor(Math.random() * 8) + 2;
+      num2 = Math.floor(Math.random() * 8) + 2;
+    }
+  }
+
+  rightAnswer = num1 * num2;
+  document.getElementById('mathQuestion').innerText = `${num1} × ${num2} = ?`;
+
+  // 連擊微幅提速獎勵
+  const speedBonus = Math.min(0.35, Math.floor(streak / 3) * 0.08);
+  currentSpeed = baseSpeed + speedBonus;
+
+  npcChef.serveAnimationTimer = 25;
+  AudioEngine.playServe();
+
+  const answers = [rightAnswer];
+  while (answers.length < 3) {
+    const offset = (Math.floor(Math.random() * 4) + 1) * (Math.random() < 0.5 ? 1 : -1);
+    const fake = Math.max(4, rightAnswer + offset);
+    if (!answers.includes(fake)) answers.push(fake);
+  }
+  answers.sort(() => Math.random() - 0.5);
+
+  foodBalls = [];
+  const targetXPositions = [120, 240, 360];
+  targetXPositions.sort(() => Math.random() - 0.5);
+
+  for (let i = 0; i < 3; i++) {
+    foodBalls.push(new FloatAnswerBall(
+      targetXPositions[i],
+      answers[i],
+      answers[i] === rightAnswer,
+      i * 6
+    ));
+  }
+  roundActive = true;
+}
+
+/* ========================
+   5. 操作監聽 (鍵盤 + 觸控)
+   ======================== */
 window.addEventListener('keydown', (e) => {
   AudioEngine.init();
   if (e.code === 'KeyA' || e.code === 'ArrowLeft') input.left = true;
@@ -464,144 +734,7 @@ canvas.addEventListener('touchend', () => {
 }, { passive: true });
 
 /* ========================
-   3. 計時器與結算分析
-   ======================== */
-function startTimer() {
-  clearInterval(timerInterval);
-  timeLeft = 60;
-  isGameOver = false;
-  document.getElementById('timerDisplay').innerText = `⏳ 倒數: ${timeLeft}s`;
-
-  timerInterval = setInterval(() => {
-    if (timeLeft > 0) {
-      timeLeft--;
-      document.getElementById('timerDisplay').innerText = `⏳ 倒數: ${timeLeft}s`;
-      if (timeLeft <= 10) {
-        document.getElementById('timerDisplay').style.color = '#d63031';
-      }
-    } else {
-      endGame();
-    }
-  }, 1000);
-}
-
-function endGame() {
-  clearInterval(timerInterval);
-  isGameOver = true;
-  roundActive = false;
-  AudioEngine.playFanfare();
-
-  let medal = "🥉";
-  let title = "烘焙見習生！";
-  if (score >= 80) {
-    medal = "🥇";
-    title = "五星特級神廚金牌！";
-  } else if (score >= 50) {
-    medal = "🥈";
-    title = "資深星級主廚銀牌！";
-  } else if (score >= 25) {
-    medal = "🥉";
-    title = "烘焙美味銅牌！";
-  } else {
-    medal = "🏅";
-    title = "活力廚房小學徒！";
-  }
-
-  document.getElementById('medalIcon').innerText = medal;
-  document.getElementById('medalTitle').innerText = title;
-  document.getElementById('finalScoreText').innerText = `總得分: ${score} 分`;
-  document.getElementById('finalStatsText').innerText = `答對: ${correctCount} 題 ｜ 最高連勝: ${maxStreak} 次`;
-
-  // 若有錯題，在結算面板列出給家長與老師參考
-  const missedBox = document.getElementById('missedBox');
-  if (roundHistoryMissed.length > 0) {
-    const uniqueMissed = [...new Set(roundHistoryMissed)];
-    missedBox.innerHTML = `⚠️ 建議多加強的弱點題型：<br>${uniqueMissed.join('、 ')}`;
-    missedBox.style.display = 'block';
-  } else {
-    missedBox.style.display = 'none';
-  }
-
-  document.getElementById('modalOverlay').style.display = 'flex';
-}
-
-document.getElementById('restartBtn').addEventListener('click', () => {
-  document.getElementById('modalOverlay').style.display = 'none';
-  document.getElementById('timerDisplay').style.color = '#e17055';
-  score = 0;
-  streak = 0;
-  maxStreak = 0;
-  correctCount = 0;
-  currentSpeed = baseSpeed;
-  roundHistoryMissed = [];
-  missedQuestionsPool = [];
-  document.getElementById('scoreDisplay').innerText = `⭐ 得分: 0`;
-  document.getElementById('comboBadge').innerText = `連擊: 0`;
-  startTimer();
-  setupNewRound();
-});
-
-/* ========================
-   4. 題目生成 (弱點複習 + 連擊加速)
-   ======================== */
-function setupNewRound() {
-  if (isGameOver) return;
-
-  const mode = document.getElementById('modeSelect').value;
-
-  // 1. 若弱點池有錯題，以 40% 機率優先重複出題強化記憶
-  if (missedQuestionsPool.length > 0 && Math.random() < 0.45) {
-    const pick = missedQuestionsPool.shift();
-    num1 = pick.a;
-    num2 = pick.b;
-  } else {
-    if (mode === 'boss') {
-      // 專門出大魔王段數 (6, 7, 8, 9)
-      const bossDigits = [6, 7, 8, 9];
-      num1 = bossDigits[Math.floor(Math.random() * bossDigits.length)];
-      num2 = Math.floor(Math.random() * 8) + 2; // 2 ~ 9
-    } else {
-      // 全段 2 ~ 9
-      num1 = Math.floor(Math.random() * 8) + 2;
-      num2 = Math.floor(Math.random() * 8) + 2;
-    }
-  }
-
-  rightAnswer = num1 * num2;
-  document.getElementById('mathQuestion').innerText = `${num1} × ${num2} = ?`;
-
-  // 2. 連擊加速公式：每連勝 3 題，球速提升 8%（上限為 1.4 倍）
-  const speedBonus = Math.min(0.4, Math.floor(streak / 3) * 0.08);
-  currentSpeed = baseSpeed + speedBonus;
-
-  npcChef.serveAnimationTimer = 25;
-  AudioEngine.playServe();
-
-  const answers = [rightAnswer];
-  while (answers.length < 3) {
-    const offset = (Math.floor(Math.random() * 4) + 1) * (Math.random() < 0.5 ? 1 : -1);
-    const fake = Math.max(4, rightAnswer + offset);
-    if (!answers.includes(fake)) answers.push(fake);
-  }
-  answers.sort(() => Math.random() - 0.5);
-
-  foodBalls = [];
-  const targetXPositions = [120, 240, 360];
-  targetXPositions.sort(() => Math.random() - 0.5);
-
-  for (let i = 0; i < 3; i++) {
-    foodBalls.push(new FloatAnswerBall(
-      targetXPositions[i],
-      answers[i],
-      answers[i] === rightAnswer,
-      i * 6
-    ));
-  }
-  roundActive = true;
-}
-
-/* ========================
-   5. 角色與實體
+   6. 角色與球體
    ======================== */
 class CutePikachuChef {
   constructor(x, y) {
@@ -614,6 +747,8 @@ class CutePikachuChef {
   }
 
   update() {
+    if (isPaused) return;
+
     if (input.left) this.x -= 5.5;
     if (input.right) this.x += 5.5;
 
@@ -643,15 +778,14 @@ class CutePikachuChef {
     const cx = this.x;
     const cy = this.y;
 
-    // 耳朵
     ctx.fillStyle = '#f6b93b';
     ctx.strokeStyle = '#2d3436';
     ctx.lineWidth = 3;
 
+    // 耳朵
     ctx.beginPath();
     ctx.ellipse(cx - 18, cy - 35, 8, 22, -0.4, 0, Math.PI * 2);
     ctx.fill(); ctx.stroke();
-
     ctx.beginPath();
     ctx.ellipse(cx + 18, cy - 35, 8, 22, 0.4, 0, Math.PI * 2);
     ctx.fill(); ctx.stroke();
@@ -689,7 +823,6 @@ class CutePikachuChef {
       ctx.arc(cx - 10, cy - 6, 5, 0, Math.PI * 2);
       ctx.arc(cx + 10, cy - 6, 5, 0, Math.PI * 2);
       ctx.fill();
-
       ctx.fillStyle = '#ffffff';
       ctx.beginPath();
       ctx.arc(cx - 12, cy - 8, 2, 0, Math.PI * 2);
@@ -704,14 +837,13 @@ class CutePikachuChef {
       ctx.stroke();
     }
 
-    // 腮紅
+    // 腮紅與嘴巴
     ctx.fillStyle = '#ff7675';
     ctx.beginPath();
     ctx.arc(cx - 20, cy + 3, 6.5, 0, Math.PI * 2);
     ctx.arc(cx + 20, cy + 3, 6.5, 0, Math.PI * 2);
     ctx.fill();
 
-    // 嘴巴
     ctx.fillStyle = '#e17055';
     ctx.beginPath();
     ctx.arc(cx, cy - 1, 2, 0, Math.PI * 2);
@@ -720,13 +852,12 @@ class CutePikachuChef {
     ctx.arc(cx, cy + 4, 3.5, 0, Math.PI);
     ctx.stroke();
 
-    // 廚師帽
+    // 帽子
     ctx.fillStyle = '#ffffff';
     ctx.strokeStyle = '#2d3436';
     ctx.lineWidth = 2.5;
     ctx.fillRect(cx - 16, cy - this.radius - 12, 32, 14);
     ctx.strokeRect(cx - 16, cy - this.radius - 12, 32, 14);
-
     ctx.beginPath();
     ctx.arc(cx, cy - this.radius - 18, 18, 0, Math.PI * 2);
     ctx.arc(cx - 14, cy - this.radius - 14, 13, 0, Math.PI * 2);
@@ -747,6 +878,7 @@ class CuteEnemyNPC {
   }
 
   update() {
+    if (isPaused) return;
     this.animTimer += 0.05;
     if (this.serveAnimationTimer > 0) this.serveAnimationTimer--;
   }
@@ -764,7 +896,6 @@ class CuteEnemyNPC {
     ctx.beginPath();
     ctx.ellipse(cx - 20, cy - 32, 9, 24, -0.5, 0, Math.PI * 2);
     ctx.fill(); ctx.stroke();
-
     ctx.beginPath();
     ctx.ellipse(cx + 20, cy - 32, 9, 24, 0.5, 0, Math.PI * 2);
     ctx.fill(); ctx.stroke();
@@ -812,7 +943,6 @@ class CuteEnemyNPC {
     ctx.lineWidth = 2.5;
     ctx.fillRect(cx - 15, cy - this.radius - 10, 30, 12);
     ctx.strokeRect(cx - 15, cy - this.radius - 10, 30, 12);
-
     ctx.beginPath();
     ctx.arc(cx, cy - this.radius - 16, 17, 0, Math.PI * 2);
     ctx.fill();
@@ -854,6 +984,8 @@ class FloatAnswerBall {
   }
 
   update() {
+    if (isPaused) return;
+
     if (this.delay > 0) {
       this.delay--;
       return;
@@ -932,7 +1064,7 @@ const player = new CutePikachuChef(200, GROUND_Y - 32);
 const npcChef = new CuteEnemyNPC(710, GROUND_Y - 32);
 
 function checkCollisions() {
-  if (!roundActive || isGameOver) return;
+  if (!roundActive || isGameOver || isPaused) return;
 
   for (let ball of foodBalls) {
     if (ball.delay > 0 || ball.isHit) continue;
@@ -956,7 +1088,7 @@ function checkCollisions() {
         ball.vx = 7;
         ball.vy = -12;
         
-        let speedNotice = streak >= 3 ? " ⚡速度提升！" : "";
+        let speedNotice = streak >= 3 ? " ⚡連擊加速！" : "";
         feedbackText = `🎉 答對了！${num1} × ${num2} = ${rightAnswer}${speedNotice}`;
         feedbackColor = "#10ac84";
 
@@ -964,12 +1096,11 @@ function checkCollisions() {
         document.getElementById('scoreDisplay').innerText = `⭐ 得分: ${score}`;
         document.getElementById('comboBadge').innerText = `連擊: ${streak}`;
       } else {
-        // 答錯：加入弱點池
         missedQuestionsPool.push({ a: num1, b: num2 });
         roundHistoryMissed.push(`${num1} × ${num2} = ${rightAnswer}`);
 
         streak = 0;
-        currentSpeed = baseSpeed; // 答錯速度重置
+        currentSpeed = baseSpeed;
         ball.vx = -3;
         ball.vy = -5;
         feedbackText = `❌ 哎呀！算錯囉，不是 ${ball.value}`;
@@ -986,7 +1117,6 @@ function checkCollisions() {
     }
   }
 
-  // 若球全部落地（反應太慢漏接）
   const allEnded = foodBalls.every(b => b.delay === 0 && (b.landed || b.isHit));
   if (allEnded && roundActive) {
     missedQuestionsPool.push({ a: num1, b: num2 });
@@ -1054,8 +1184,7 @@ function gameLoop() {
   requestAnimationFrame(gameLoop);
 }
 
-startTimer();
-setupNewRound();
+// 預先啟動畫面繪製（此時停留在準備暫停面板，不扣時間也不發球）
 gameLoop();
 </script>
 </body>
