@@ -3,101 +3,124 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-select=none">
-  <title>寶貝球排球：神廚九九乘法特訓</title>
+  <title>皮卡丘排球：九九乘法神速特訓 HD</title>
   <style>
     * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
     body {
-      margin: 0; padding: 10px 0;
+      margin: 0; padding: 12px 0;
       background: #74b9ff;
       display: flex; flex-direction: column; align-items: center;
       font-family: Arial, "Microsoft JhengHei", sans-serif;
     }
     .hud {
-      display: flex; gap: 10px; align-items: center; justify-content: space-between;
-      background: #fff; padding: 6px 16px; border-radius: 30px;
-      margin-bottom: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-      flex-wrap: wrap; width: 95vw; max-width: 860px;
+      display: flex; gap: 12px; align-items: center; justify-content: space-between;
+      background: #fff; padding: 8px 20px; border-radius: 30px;
+      margin-bottom: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+      flex-wrap: wrap; width: 96vw; max-width: 1000px;
     }
     .hud-left { display: flex; gap: 8px; align-items: center; }
     .btn-top {
-      background: #0984e3; color: #fff; border: none; padding: 6px 12px;
-      border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 13px;
+      background: #0984e3; color: #fff; border: none; padding: 7px 14px;
+      border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 14px;
+      box-shadow: 0 3px 6px rgba(9, 132, 227, 0.3);
+      transition: transform 0.05s, background-color 0.15s;
     }
+    .btn-top:active { transform: scale(0.96); }
     .btn-top.sound-off { background: #778ca3; }
     .question-box {
-      font-size: 26px; font-weight: 900; color: #d63031;
-      background: #ffeaa7; padding: 4px 18px; border-radius: 20px;
+      font-size: 30px; font-weight: 900; color: #d63031;
+      background: #ffeaa7; padding: 4px 22px; border-radius: 22px;
       border: 3px dashed #e17055;
     }
-    .status-text { font-size: 15px; font-weight: bold; color: #2d3436; }
+    .status-text { font-size: 16px; font-weight: bold; color: #2d3436; }
     #gameWrapper {
       position: relative;
-      width: 95vw; max-width: 860px;
+      width: 96vw; max-width: 1000px;
     }
     canvas {
       background: linear-gradient(to bottom, #ffeaa7 0%, #ffbe76 100%);
-      border: 5px solid #fdcb6e; border-radius: 20px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+      border: 5px solid #fdcb6e; border-radius: 22px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.18);
       display: block; width: 100%; height: auto;
     }
 
-    /* 懸浮遮罩面板 (主設定與結算) */
+    /* 懸浮遮罩面板 */
     .overlay-modal {
       position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.75); border-radius: 20px;
+      background: rgba(0, 0, 0, 0.75); border-radius: 22px;
       display: flex; flex-direction: column; justify-content: center; align-items: center;
       backdrop-filter: blur(5px); z-index: 100;
     }
     .card-box {
-      background: #ffffff; padding: 16px 20px; border-radius: 24px;
+      background: #ffffff; padding: 18px 24px; border-radius: 26px;
       text-align: center; border: 5px solid #ffbe76;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.35); width: 92%; max-width: 530px;
+      box-shadow: 0 12px 35px rgba(0,0,0,0.35); width: 94%; max-width: 600px;
       animation: pop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
     @keyframes pop {
       0% { transform: scale(0.65); opacity: 0; }
       100% { transform: scale(1); opacity: 1; }
     }
-    .card-title { font-size: 22px; font-weight: 900; color: #2d3436; margin: 0 0 8px 0; }
+    .card-title { font-size: 23px; font-weight: 900; color: #2d3436; margin: 0 0 8px 0; }
     .setting-row { margin-bottom: 8px; text-align: left; }
-    .setting-label { font-size: 13px; font-weight: bold; color: #636e72; margin-bottom: 3px; display: block; }
-    .opt-group { display: flex; gap: 6px; }
+    .setting-label { font-size: 14px; font-weight: bold; color: #636e72; margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; }
+    .opt-group { display: flex; gap: 6px; flex-wrap: wrap; }
     .opt-btn {
-      flex: 1; padding: 6px 3px; border: 2px solid #dfe6e9; background: #f8f9fa;
-      border-radius: 12px; font-size: 12px; font-weight: bold; color: #2d3436;
-      cursor: pointer; line-height: 1.3;
+      flex: 1; min-width: 50px; padding: 7px 3px; border: 2px solid #dfe6e9; background: #f8f9fa;
+      border-radius: 12px; font-size: 13px; font-weight: bold; color: #2d3436;
+      cursor: pointer; line-height: 1.25; text-align: center;
     }
     .opt-btn.active {
       border-color: #e17055; background: #ffeaa7; color: #d63031;
-      transform: scale(1.02); box-shadow: 0 3px 6px rgba(225, 112, 85, 0.25);
+      transform: scale(1.02); box-shadow: 0 2px 5px rgba(225, 112, 85, 0.25);
     }
+
+    /* 數字 1~10 自由勾選網格 */
+    .num-grid {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 5px;
+    }
+    .num-btn {
+      padding: 8px 0; border: 2px solid #dfe6e9; background: #f8f9fa;
+      border-radius: 9px; font-size: 15px; font-weight: 900; color: #2d3436;
+      cursor: pointer; transition: all 0.1s;
+    }
+    .num-btn.selected {
+      border-color: #e17055; background: #ff7675; color: #ffffff;
+      transform: scale(1.04); box-shadow: 0 2px 6px rgba(235, 77, 75, 0.3);
+    }
+    .quick-tools { display: flex; gap: 8px; }
+    .tool-link {
+      font-size: 13px; color: #0984e3; cursor: pointer; text-decoration: underline; font-weight: bold;
+    }
+
     .btn-main-action {
-      width: 100%; margin-top: 8px; padding: 11px; font-size: 18px; font-weight: 900;
+      width: 100%; margin-top: 10px; padding: 12px; font-size: 19px; font-weight: 900;
       color: #fff; background: #10ac84; border: none; border-radius: 30px;
       cursor: pointer; box-shadow: 0 5px 15px rgba(16, 172, 132, 0.4);
     }
     .btn-main-action:active { transform: scale(0.97); }
 
-    /* 頒獎典禮元件 */
     .medal-icon { font-size: 60px; margin-bottom: 2px; }
-    .award-text { font-size: 16px; font-weight: bold; color: #636e72; margin: 6px 0; }
+    .award-text { font-size: 16px; font-weight: bold; color: #636e72; margin: 4px 0; }
 
     /* 觸控控制列 */
     .controls-row {
       display: flex; justify-content: space-between; align-items: center;
-      width: 95vw; max-width: 860px; margin-top: 10px; padding: 0 10px;
+      width: 96vw; max-width: 1000px; margin-top: 12px; padding: 0 10px;
     }
-    .d-pad { display: flex; gap: 12px; }
+    .d-pad { display: flex; gap: 14px; }
     .ctrl-btn {
-      width: 70px; height: 70px; border-radius: 50%; border: none;
-      background: #fff; font-size: 26px; font-weight: bold; color: #2d3436;
-      box-shadow: 0 5px 12px rgba(0,0,0,0.2); cursor: pointer;
+      width: 74px; height: 74px; border-radius: 50%; border: none;
+      background: #fff; font-size: 28px; font-weight: bold; color: #2d3436;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.2); cursor: pointer;
       display: flex; align-items: center; justify-content: center;
     }
     .ctrl-btn:active { transform: translateY(3px); background: #dfe6e9; }
     .btn-jump {
-      width: 80px; height: 80px; background: #ff7675; color: #fff;
-      font-size: 20px; font-weight: 900;
+      width: 86px; height: 86px; background: #ff7675; color: #fff;
+      font-size: 22px; font-weight: 900;
     }
     .btn-jump:active { background: #d63031; }
   </style>
@@ -106,64 +129,79 @@
 
   <div class="hud">
     <div class="hud-left">
-      <button class="btn-top" id="btnOpenMenu">⚙️ 設定選單</button>
+      <button class="btn-top" id="btnOpenMenu">⚙️ 特訓選單</button>
       <button class="btn-top" id="btnAudioToggle">🔊 音效：開</button>
     </div>
     <div class="status-text" id="timerLabel">⏳ 倒數: 120s</div>
-    <div class="question-box" id="questionLabel">請先確認設定</div>
+    <div class="question-box" id="questionLabel">準備發球中...</div>
     <div class="status-text" id="scoreLabel">⭐ 得分: 0</div>
     <div class="status-text" id="streakLabel">🔥 連擊: 0</div>
   </div>
 
   <div id="gameWrapper">
-    <canvas id="gameCanvas" width="860" height="460"></canvas>
+    <!-- 拓寬畫布解析度為 1000 x 520 -->
+    <canvas id="gameCanvas" width="1000" height="520"></canvas>
 
     <!-- 1. 開局前設定選單 -->
     <div class="overlay-modal" id="menuModal">
       <div class="card-box">
-        <h2 class="card-title">🔴 寶貝球排球：挑戰設定</h2>
+        <h2 class="card-title">⚡ 皮卡丘 vs 小智：排球道館特訓</h2>
         
-        <!-- 時限 -->
+        <!-- 自由選擇 1 ~ 10 段 -->
         <div class="setting-row">
-          <span class="setting-label">⏱️ 選擇時限：</span>
+          <span class="setting-label">
+            <span>🎯 勾選要練習的乘法段數（可多選）：</span>
+            <span class="quick-tools">
+              <span class="tool-link" id="btnSelectAll">全選</span>
+              <span class="tool-link" id="btnSelectBoss">專攻6~9</span>
+              <span class="tool-link" id="btnClearAll">清空</span>
+            </span>
+          </span>
+          <div class="num-grid" id="gridNumbers">
+            <button class="num-btn" data-n="1">1</button>
+            <button class="num-btn" data-n="2">2</button>
+            <button class="num-btn" data-n="3">3</button>
+            <button class="num-btn" data-n="4">4</button>
+            <button class="num-btn" data-n="5">5</button>
+            <button class="num-btn selected" data-n="6">6</button>
+            <button class="num-btn selected" data-n="7">7</button>
+            <button class="num-btn selected" data-n="8">8</button>
+            <button class="num-btn selected" data-n="9">9</button>
+            <button class="num-btn" data-n="10">10</button>
+          </div>
+        </div>
+
+        <!-- 選擇時限 -->
+        <div class="setting-row">
+          <span class="setting-label">⏱️ 選擇特訓時限：</span>
           <div class="opt-group" id="grpTime">
-            <button class="opt-btn" data-val="60">⚡ 1 分鐘<br>(熱身)</button>
-            <button class="opt-btn active" data-val="120">⏳ 2 分鐘<br>(標準)</button>
-            <button class="opt-btn" data-val="180">🏆 3 分鐘<br>(耐力)</button>
+            <button class="opt-btn" data-val="60">⚡ 1 分鐘</button>
+            <button class="opt-btn active" data-val="120">⏳ 2 分鐘</button>
+            <button class="opt-btn" data-val="180">🏆 3 分鐘</button>
           </div>
         </div>
 
-        <!-- 關卡難度 -->
+        <!-- 方案 A：發球球速 -->
         <div class="setting-row">
-          <span class="setting-label">🎯 選擇關卡：</span>
-          <div class="opt-group" id="grpDiff">
-            <button class="opt-btn" data-val="easy">🌱 初階基礎<br>(2~5段)</button>
-            <button class="opt-btn active" data-val="boss">🔥 大魔王特訓<br>(6~9段)</button>
-            <button class="opt-btn" data-val="all">🌟 全段挑戰<br>(2~9段)</button>
-          </div>
-        </div>
-
-        <!-- 速度 -->
-        <div class="setting-row">
-          <span class="setting-label">☁️ 料理速度：</span>
+          <span class="setting-label">⚡ 發球球速（特訓節奏）：</span>
           <div class="opt-group" id="grpSpeed">
-            <button class="opt-btn active" data-val="0.25">🎈 慢火烘焙<br>(0.25x 悠閒2秒發)</button>
-            <button class="opt-btn" data-val="0.55">🍳 暖心料理<br>(0.55x)</button>
-            <button class="opt-btn" data-val="0.85">🔥 快炒對決<br>(0.85x)</button>
-            <button class="opt-btn" data-val="1.0" style="color:#d63031;">⚡ 終極快手<br>(1.0x)</button>
+            <button class="opt-btn active" data-val="0.25">🎈 悠閒飄飄<br>(0.25x 悠閒2秒)</button>
+            <button class="opt-btn" data-val="0.55">⚡ 電光節奏<br>(0.55x 標準)</button>
+            <button class="opt-btn" data-val="0.85">🔥 高速扣殺<br>(0.85x 挑戰)</button>
+            <button class="opt-btn" data-val="1.0" style="color:#d63031;">👑 神速對決<br>(1.0x 極限)</button>
           </div>
         </div>
 
         <!-- 音效開關 -->
         <div class="setting-row">
-          <span class="setting-label">🔊 音效開關：</span>
+          <span class="setting-label">🔊 音效設定：</span>
           <div class="opt-group" id="grpSound">
             <button class="opt-btn active" data-val="on">🔊 開啟音效</button>
             <button class="opt-btn" data-val="off">🔇 靜音模式</button>
           </div>
         </div>
 
-        <button class="btn-main-action" id="btnStartGame">🚀 開始挑戰出餐！</button>
+        <button class="btn-main-action" id="btnStartGame">🚀 開始挑戰出擊！</button>
       </div>
     </div>
 
@@ -171,10 +209,10 @@
     <div class="overlay-modal" id="awardModal" style="display: none;">
       <div class="card-box">
         <div class="medal-icon" id="awardMedal">🥇</div>
-        <h2 class="card-title" id="awardTitle">大師球特級神廚金牌！</h2>
+        <h2 class="card-title" id="awardTitle">大師球特級大師金牌！</h2>
         <div class="award-text" id="awardScore">總得分: 100 分</div>
         <div class="award-text" id="awardDetails">答對: 10 題 ｜ 最高連擊: 5 次</div>
-        <button class="btn-main-action" id="btnReturnMenu">🔄 返回設定 / 再玩一局</button>
+        <button class="btn-main-action" id="btnReturnMenu">🔄 返回特訓選單 / 再玩一局</button>
       </div>
     </div>
   </div>
@@ -188,12 +226,11 @@
   </div>
 
 <script>
-// ==================== 音效引擎 ====================
+// ==================== 音效引擎全面檢修與喚醒機制 ====================
 let audioEnabled = true;
 let audioCtx = null;
 
-function safeTone(freq, type = 'sine', duration = 0.15) {
-  if (!audioEnabled) return;
+function unlockAudioContext() {
   try {
     if (!audioCtx) {
       const AudioClass = window.AudioContext || window.webkitAudioContext;
@@ -202,46 +239,53 @@ function safeTone(freq, type = 'sine', duration = 0.15) {
     if (audioCtx && audioCtx.state === 'suspended') {
       audioCtx.resume().catch(() => {});
     }
-    if (!audioCtx) return;
+  } catch (e) {}
+}
 
+function safeTone(freq, type = 'sine', duration = 0.15, vol = 0.18) {
+  if (!audioEnabled) return;
+  unlockAudioContext();
+  if (!audioCtx) return;
+
+  try {
+    const now = audioCtx.currentTime;
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
-    const now = audioCtx.currentTime;
     osc.type = type;
     osc.frequency.setValueAtTime(freq, now);
-    gain.gain.setValueAtTime(0.18, now);
+    gain.gain.setValueAtTime(vol, now);
     gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
     osc.connect(gain);
     gain.connect(audioCtx.destination);
     osc.start(now);
     osc.stop(now + duration + 0.02);
-  } catch(e) {}
+  } catch (e) {}
 }
 
 const Sound = {
-  jump: () => safeTone(450, 'sine', 0.12),
-  serve: () => safeTone(520, 'triangle', 0.15),
+  jump: () => safeTone(440, 'sine', 0.12, 0.16),
+  serve: () => safeTone(580, 'triangle', 0.16, 0.2),
   correct: () => {
-    safeTone(523, 'sine', 0.1);
-    setTimeout(() => safeTone(659, 'sine', 0.1), 80);
-    setTimeout(() => safeTone(784, 'sine', 0.2), 160);
+    safeTone(523.25, 'sine', 0.09, 0.2);
+    setTimeout(() => safeTone(659.25, 'sine', 0.09, 0.2), 70);
+    setTimeout(() => safeTone(783.99, 'sine', 0.18, 0.22), 140);
   },
-  wrong: () => safeTone(150, 'sawtooth', 0.22),
+  wrong: () => safeTone(140, 'sawtooth', 0.22, 0.25),
   fanfare: () => {
-    safeTone(523, 'triangle', 0.15);
-    setTimeout(() => safeTone(659, 'triangle', 0.15), 140);
-    setTimeout(() => safeTone(784, 'triangle', 0.2), 280);
-    setTimeout(() => safeTone(1046, 'triangle', 0.45), 440);
+    safeTone(523, 'triangle', 0.14, 0.25);
+    setTimeout(() => safeTone(659, 'triangle', 0.14, 0.25), 120);
+    setTimeout(() => safeTone(784, 'triangle', 0.18, 0.25), 240);
+    setTimeout(() => safeTone(1046, 'triangle', 0.45, 0.3), 380);
   }
 };
 
 // ==================== 遊戲狀態與參數 ====================
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
-const GROUND_Y = 405;
+const GROUND_Y = 460; // 放大後的新地面高度
 
+let selectedTables = [6, 7, 8, 9];
 let configDuration = 120;
-let configDiff = 'boss';
 let configSpeed = 0.25;
 
 let isPlaying = false;
@@ -255,25 +299,66 @@ let gameTimer = null;
 let currentA = 7, currentB = 8, rightAns = 56;
 let balls = [];
 let feedback = { text: "", color: "#27ae60", timer: 0 };
-
-// ★ 落地學習複習暫停狀態
 let reviewPause = { active: false, remainingFrames: 0, textFormula: "" };
 
 const keys = { left: false, right: false, jump: false };
 
-// ==================== 設定面板選項切換監聽 ====================
+// ==================== 自由選段 1~10 監聽器 ====================
+const numButtons = document.querySelectorAll('#gridNumbers .num-btn');
+
+function updateSelectedTables() {
+  selectedTables = [];
+  numButtons.forEach(btn => {
+    if (btn.classList.contains('selected')) {
+      selectedTables.push(parseInt(btn.dataset.n, 10));
+    }
+  });
+  if (selectedTables.length === 0) {
+    selectedTables = [1];
+    document.querySelector('#gridNumbers .num-btn[data-n="1"]').classList.add('selected');
+  }
+}
+
+numButtons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    unlockAudioContext();
+    btn.classList.toggle('selected');
+    updateSelectedTables();
+  });
+});
+
+document.getElementById('btnSelectAll').addEventListener('click', () => {
+  unlockAudioContext();
+  numButtons.forEach(btn => btn.classList.add('selected'));
+  updateSelectedTables();
+});
+document.getElementById('btnSelectBoss').addEventListener('click', () => {
+  unlockAudioContext();
+  numButtons.forEach(btn => {
+    const n = parseInt(btn.dataset.n, 10);
+    if (n >= 6 && n <= 9) btn.classList.add('selected');
+    else btn.classList.remove('selected');
+  });
+  updateSelectedTables();
+});
+document.getElementById('btnClearAll').addEventListener('click', () => {
+  unlockAudioContext();
+  numButtons.forEach(btn => btn.classList.remove('selected'));
+  document.querySelector('#gridNumbers .num-btn[data-n="1"]').classList.add('selected');
+  updateSelectedTables();
+});
+
 function setupOptionGroup(groupId, callback) {
   document.querySelectorAll(`#${groupId} .opt-btn`).forEach(btn => {
     btn.addEventListener('click', () => {
+      unlockAudioContext();
       document.querySelectorAll(`#${groupId} .opt-btn`).forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       callback(btn.dataset.val);
     });
   });
 }
-
 setupOptionGroup('grpTime', val => configDuration = parseInt(val, 10));
-setupOptionGroup('grpDiff', val => configDiff = val);
 setupOptionGroup('grpSpeed', val => configSpeed = parseFloat(val));
 setupOptionGroup('grpSound', val => {
   audioEnabled = (val === 'on');
@@ -291,6 +376,7 @@ function updateSoundUI() {
   }
 }
 document.getElementById('btnAudioToggle').addEventListener('click', () => {
+  unlockAudioContext();
   audioEnabled = !audioEnabled;
   updateSoundUI();
   document.querySelectorAll('#grpSound .opt-btn').forEach(btn => {
@@ -303,16 +389,19 @@ document.getElementById('btnAudioToggle').addEventListener('click', () => {
 });
 
 document.getElementById('btnStartGame').addEventListener('click', () => {
+  unlockAudioContext();
   document.getElementById('menuModal').style.display = 'none';
   document.getElementById('awardModal').style.display = 'none';
   startGame();
 });
 
 document.getElementById('btnOpenMenu').addEventListener('click', () => {
+  unlockAudioContext();
   pauseToMenu();
 });
 
 document.getElementById('btnReturnMenu').addEventListener('click', () => {
+  unlockAudioContext();
   document.getElementById('awardModal').style.display = 'none';
   document.getElementById('menuModal').style.display = 'flex';
   isPlaying = false;
@@ -339,7 +428,7 @@ function startGame() {
   document.getElementById('streakLabel').innerText = `🔥 連擊: 0`;
   document.getElementById('timerLabel').innerText = `⏳ 倒數: ${timeLeft}s`;
 
-  player.x = 240;
+  player.x = 280;
   player.y = GROUND_Y - player.radius;
   player.vy = 0;
 
@@ -350,7 +439,6 @@ function startGame() {
 function startClock() {
   clearInterval(gameTimer);
   gameTimer = setInterval(() => {
-    // 當處於落地算式學習暫停時，倒數時間暫時凍結
     if (isPlaying && !reviewPause.active && timeLeft > 0) {
       timeLeft--;
       document.getElementById('timerLabel').innerText = `⏳ 倒數: ${timeLeft}s`;
@@ -372,19 +460,19 @@ function showAward() {
   const bronze = Math.round(25 * ratio);
 
   let medal = "🥉";
-  let title = "超級球美味銅牌！";
+  let title = "超級球道館銅牌！";
   if (score >= gold) {
     medal = "🥇";
-    title = "大師球特級神廚金牌！";
+    title = "大師球特級大師金牌！";
   } else if (score >= silver) {
     medal = "🥈";
-    title = "高級球星級主廚銀牌！";
+    title = "高級球星級訓練師銀牌！";
   } else if (score >= bronze) {
     medal = "🥉";
-    title = "超級球美味銅牌！";
+    title = "超級球道館銅牌！";
   } else {
     medal = "🏅";
-    title = "精靈球廚房見習徽章！";
+    title = "精靈球新手訓練師徽章！";
   }
 
   document.getElementById('awardMedal').innerText = medal;
@@ -394,16 +482,16 @@ function showAward() {
   document.getElementById('awardModal').style.display = 'flex';
 }
 
-// ==================== 角色與物體 ====================
+// ==================== 角色與實體 (皮卡丘 & 精緻帥氣版小智) ====================
 const player = {
-  x: 240, y: GROUND_Y - 32, vy: 0, radius: 32, grounded: true,
+  x: 280, y: GROUND_Y - 34, vy: 0, radius: 34, grounded: true,
   update() {
     if (!isPlaying || reviewPause.active) return;
-    if (keys.left) this.x -= 7.2;
-    if (keys.right) this.x += 7.2;
+    if (keys.left) this.x -= 7.8;
+    if (keys.right) this.x += 7.8;
 
     if (keys.jump && this.grounded) {
-      this.vy = -9.6;
+      this.vy = -10.2;
       this.grounded = false;
       Sound.jump();
     }
@@ -417,72 +505,170 @@ const player = {
       this.grounded = true;
     }
 
-    if (this.x - this.radius < 20) this.x = 20 + this.radius;
-    if (this.x + this.radius > 450) this.x = 450 - this.radius;
+    if (this.x - this.radius < 25) this.x = 25 + this.radius;
+    if (this.x + this.radius > 530) this.x = 530 - this.radius;
   },
   draw() {
     const cx = this.x, cy = this.y;
     ctx.save();
     // 耳朵
-    ctx.fillStyle = '#f6b93b'; ctx.strokeStyle = '#2d3436'; ctx.lineWidth = 3;
-    ctx.beginPath(); ctx.ellipse(cx - 18, cy - 35, 8, 22, -0.4, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-    ctx.beginPath(); ctx.ellipse(cx + 18, cy - 35, 8, 22, 0.4, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-    // 耳尖
+    ctx.fillStyle = '#f6b93b'; ctx.strokeStyle = '#2d3436'; ctx.lineWidth = 3.2;
+    ctx.beginPath(); ctx.ellipse(cx - 20, cy - 38, 9, 24, -0.4, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(cx + 20, cy - 38, 9, 24, 0.4, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    // 耳尖黑斑
     ctx.fillStyle = '#2d3436';
-    ctx.beginPath(); ctx.ellipse(cx - 24, cy - 50, 5, 8, -0.4, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.ellipse(cx + 24, cy - 50, 5, 8, 0.4, 0, Math.PI * 2); ctx.fill();
-    // 身體與圍裙
+    ctx.beginPath(); ctx.ellipse(cx - 27, cy - 54, 5.5, 9, -0.4, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(cx + 27, cy - 54, 5.5, 9, 0.4, 0, Math.PI * 2); ctx.fill();
+    // 圓滾身體
     ctx.beginPath(); ctx.arc(cx, cy, this.radius, 0, Math.PI * 2);
     ctx.fillStyle = '#f6b93b'; ctx.fill(); ctx.stroke();
-    ctx.beginPath(); ctx.arc(cx, cy + 8, this.radius * 0.72, 0, Math.PI);
+    // 潔白圍裙
+    ctx.beginPath(); ctx.arc(cx, cy + 9, this.radius * 0.72, 0, Math.PI);
     ctx.fillStyle = '#ffffff'; ctx.fill();
-    // 眼睛腮紅
+    // 大眼睛與高光
     ctx.fillStyle = '#2d3436';
-    ctx.beginPath(); ctx.arc(cx - 10, cy - 6, 5, 0, Math.PI * 2); ctx.arc(cx + 10, cy - 6, 5, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx - 11, cy - 7, 5.5, 0, Math.PI * 2); ctx.arc(cx + 11, cy - 7, 5.5, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath(); ctx.arc(cx - 13, cy - 9, 2.2, 0, Math.PI * 2); ctx.arc(cx + 9, cy - 9, 2.2, 0, Math.PI * 2); ctx.fill();
+    // 紅色腮紅
     ctx.fillStyle = '#ff7675';
-    ctx.beginPath(); ctx.arc(cx - 20, cy + 3, 6, 0, Math.PI * 2); ctx.arc(cx + 20, cy + 3, 6, 0, Math.PI * 2); ctx.fill();
-    // 廚師帽
+    ctx.beginPath(); ctx.arc(cx - 22, cy + 3, 7, 0, Math.PI * 2); ctx.arc(cx + 22, cy + 3, 7, 0, Math.PI * 2); ctx.fill();
+    // 帥氣廚師帽
     ctx.fillStyle = '#ffffff'; ctx.strokeStyle = '#2d3436'; ctx.lineWidth = 2.5;
-    ctx.fillRect(cx - 16, cy - this.radius - 12, 32, 14); ctx.strokeRect(cx - 16, cy - this.radius - 12, 32, 14);
-    ctx.beginPath(); ctx.arc(cx, cy - this.radius - 18, 18, 0, Math.PI * 2); ctx.fill();
+    ctx.fillRect(cx - 18, cy - this.radius - 14, 36, 16); ctx.strokeRect(cx - 18, cy - this.radius - 14, 36, 16);
+    ctx.beginPath(); ctx.arc(cx, cy - this.radius - 20, 20, 0, Math.PI * 2); ctx.fill();
     ctx.restore();
   }
 };
 
-const enemy = {
-  x: 710, y: GROUND_Y - 32, radius: 32,
+// ★ 高顏值、立體重繪版「小智（Ash）」
+const ashEnemy = {
+  x: 820, y: GROUND_Y - 45, radius: 36, breathe: 0,
   draw() {
-    const cx = this.x, cy = this.y;
+    this.breathe += 0.04;
+    const dy = Math.sin(this.breathe) * 2.5;
+    const cx = this.x, cy = this.y + dy;
     ctx.save();
-    ctx.fillStyle = '#cd84f1'; ctx.strokeStyle = '#2d3436'; ctx.lineWidth = 3;
-    ctx.beginPath(); ctx.ellipse(cx - 20, cy - 32, 9, 24, -0.5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-    ctx.beginPath(); ctx.ellipse(cx + 20, cy - 32, 9, 24, 0.5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-    ctx.beginPath(); ctx.arc(cx, cy, this.radius, 0, Math.PI * 2);
-    ctx.fillStyle = '#e056fd'; ctx.fill(); ctx.stroke();
-    ctx.beginPath(); ctx.arc(cx, cy + 8, this.radius * 0.72, 0, Math.PI);
+
+    // 1. 後發刺蝟輪廓 (更有立體動感)
+    ctx.fillStyle = '#2d3436';
+    ctx.beginPath();
+    ctx.moveTo(cx - 28, cy - 10);
+    ctx.lineTo(cx - 44, cy - 25);
+    ctx.lineTo(cx - 30, cy - 35);
+    ctx.lineTo(cx - 40, cy - 50);
+    ctx.lineTo(cx - 18, cy - 48);
+    ctx.lineTo(cx - 10, cy - 62);
+    ctx.lineTo(cx + 12, cy - 52);
+    ctx.lineTo(cx + 32, cy - 58);
+    ctx.lineTo(cx + 28, cy - 36);
+    ctx.lineTo(cx + 46, cy - 26);
+    ctx.lineTo(cx + 26, cy - 6);
+    ctx.fill();
+
+    // 2. 帥氣身體 (經典藍白訓練師外套 + 金屬領扣)
+    ctx.beginPath(); ctx.arc(cx, cy + 12, 38, 0, Math.PI * 2);
+    ctx.fillStyle = '#0984e3'; ctx.fill();
+    ctx.strokeStyle = '#2d3436'; ctx.lineWidth = 3.5; ctx.stroke();
+
+    // 外套白色胸襯與紅邊
+    ctx.beginPath(); ctx.arc(cx, cy + 16, 26, 0, Math.PI);
     ctx.fillStyle = '#ffffff'; ctx.fill();
-    ctx.strokeStyle = '#2d3436'; ctx.lineWidth = 3;
-    ctx.beginPath(); ctx.arc(cx - 10, cy - 4, 5, Math.PI, 0); ctx.arc(cx + 10, cy - 4, 5, Math.PI, 0); ctx.stroke();
-    ctx.fillStyle = '#ff9ff3';
-    ctx.beginPath(); ctx.arc(cx - 18, cy + 5, 6, 0, Math.PI * 2); ctx.arc(cx + 18, cy + 5, 6, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#ffffff'; ctx.strokeStyle = '#2d3436'; ctx.lineWidth = 2.5;
-    ctx.fillRect(cx - 15, cy - this.radius - 10, 30, 12); ctx.strokeRect(cx - 15, cy - this.radius - 10, 30, 12);
-    ctx.beginPath(); ctx.arc(cx, cy - this.radius - 16, 17, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#ff7675'; ctx.lineWidth = 2.5; ctx.stroke();
+
+    // 3. 臉部膚色 (自然日系動漫膚色)
+    ctx.beginPath(); ctx.arc(cx, cy - 4, 25, 0, Math.PI * 2);
+    ctx.fillStyle = '#ffeaa7'; ctx.fill();
+    ctx.strokeStyle = '#2d3436'; ctx.lineWidth = 2.8; ctx.stroke();
+
+    // 4. 前額刺蝟瀏海
+    ctx.fillStyle = '#2d3436';
+    ctx.beginPath();
+    ctx.moveTo(cx - 22, cy - 18);
+    ctx.lineTo(cx - 12, cy - 6);
+    ctx.lineTo(cx - 4, cy - 18);
+    ctx.lineTo(cx + 6, cy - 4);
+    ctx.lineTo(cx + 16, cy - 18);
+    ctx.lineTo(cx + 22, cy - 10);
+    ctx.lineTo(cx + 24, cy - 24);
+    ctx.lineTo(cx - 24, cy - 24);
+    ctx.fill();
+
+    // 5. 專注而自信的大眼睛 (帶反光瞳孔)
+    // 左眼
+    ctx.fillStyle = '#2d3436';
+    ctx.beginPath(); ctx.ellipse(cx - 9, cy - 8, 4.5, 6, 0.1, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath(); ctx.arc(cx - 10.5, cy - 10, 1.8, 0, Math.PI * 2); ctx.fill();
+    // 右眼
+    ctx.fillStyle = '#2d3436';
+    ctx.beginPath(); ctx.ellipse(cx + 9, cy - 8, 4.5, 6, -0.1, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath(); ctx.arc(cx + 7.5, cy - 10, 1.8, 0, Math.PI * 2); ctx.fill();
+
+    // 熱血自信微揚眉毛
+    ctx.strokeStyle = '#2d3436'; ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(cx - 15, cy - 16); ctx.lineTo(cx - 4, cy - 14);
+    ctx.moveTo(cx + 4, cy - 14); ctx.lineTo(cx + 15, cy - 16);
+    ctx.stroke();
+
+    // 經典臉頰閃電斑紋 (標誌性符號)
+    ctx.strokeStyle = '#d63031'; ctx.lineWidth = 2.2;
+    ctx.beginPath();
+    ctx.moveTo(cx - 19, cy + 3); ctx.lineTo(cx - 13, cy + 6); ctx.lineTo(cx - 17, cy + 9);
+    ctx.moveTo(cx + 13, cy + 6); ctx.lineTo(cx + 19, cy + 3); ctx.lineTo(cx + 15, cy + 9);
+    ctx.stroke();
+
+    // 帥氣笑意嘴角
+    ctx.strokeStyle = '#2d3436'; ctx.lineWidth = 2.2;
+    ctx.beginPath(); ctx.arc(cx, cy + 3, 5, 0.1, Math.PI - 0.1); ctx.stroke();
+
+    // 6. 經典紅白精靈球標誌訓練師棒球帽
+    ctx.fillStyle = '#eb4d4b'; ctx.strokeStyle = '#2d3436'; ctx.lineWidth = 3;
+    // 帽頂
+    ctx.beginPath(); ctx.arc(cx, cy - 24, 25, Math.PI, 0); ctx.fill(); ctx.stroke();
+    // 白色前緣與帽舌
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(cx - 25, cy - 25, 50, 7);
+    ctx.strokeRect(cx - 25, cy - 25, 50, 7);
+    // 帥氣斜向綠/白帽舌
+    ctx.beginPath();
+    ctx.moveTo(cx - 28, cy - 19);
+    ctx.lineTo(cx - 38, cy - 12);
+    ctx.lineTo(cx - 10, cy - 17);
+    ctx.fillStyle = '#ffffff'; ctx.fill(); ctx.stroke();
+
+    // 帽子正面經典綠色精靈球/C形印記
+    ctx.strokeStyle = '#20bf6b'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(cx, cy - 35, 6, 0.5, Math.PI * 1.5); ctx.stroke();
+
+    // 7. 帥氣胸章名稱標籤
+    ctx.fillStyle = '#2d3436';
+    ctx.fillRect(cx - 28, cy + 36, 56, 18);
+    ctx.strokeStyle = '#fdcb6e'; ctx.lineWidth = 2;
+    ctx.strokeRect(cx - 28, cy + 36, 56, 18);
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '900 13px "Microsoft JhengHei", Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText("小智", cx, cy + 50);
+
     ctx.restore();
   }
 };
 
 class PokeBall {
   constructor(targetX, value, isCorrect, delay) {
-    this.x = 690;
-    this.y = 230;
+    this.x = 800; // 從小智前方平順拋出
+    this.y = 260;
     this.targetX = targetX;
     this.value = value;
     this.isCorrect = isCorrect;
-    this.radius = 33;
+    this.radius = 35; // 球體微放大
     this.delay = delay;
-    this.vx = (targetX - 690) / 130;
-    this.vy = -4.2;
+    this.vx = (targetX - 800) / 135;
+    this.vy = -4.4;
     this.hit = false;
     this.fading = false;
     this.opacity = 1.0;
@@ -498,12 +684,12 @@ class PokeBall {
     }
     if (this.fading) {
       this.opacity -= 0.12;
-      this.y -= 0.5;
+      this.y -= 0.6;
       if (this.opacity <= 0) this.landed = true;
       return;
     }
     if (this.hit) {
-      this.x += 8; this.y -= 10;
+      this.x += 9; this.y -= 11;
       return;
     }
 
@@ -515,11 +701,11 @@ class PokeBall {
     if (this.y + this.radius >= GROUND_Y) {
       this.y = GROUND_Y - this.radius;
       if (!this.isCorrect) {
-        this.fading = true; // 錯解球觸地立刻消散
+        this.fading = true;
       } else {
         if (configSpeed <= 0.35 && this.bounce < 2) {
           this.bounce++;
-          this.vy = -3.8;
+          this.vy = -4.0;
           Sound.jump();
         } else {
           this.landed = true;
@@ -534,47 +720,42 @@ class PokeBall {
 
     if (!this.fading) {
       ctx.beginPath();
-      ctx.ellipse(this.x, GROUND_Y, this.radius * 0.85, 7, 0, 0, Math.PI * 2);
+      ctx.ellipse(this.x, GROUND_Y, this.radius * 0.85, 8, 0, 0, Math.PI * 2);
       ctx.fillStyle = 'rgba(0,0,0,0.18)'; ctx.fill();
     }
 
     const cx = this.x, cy = this.y, r = this.radius;
+    // 經典精靈球：下白上紅
     ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI);
     ctx.fillStyle = '#f1f2f6'; ctx.fill();
     ctx.beginPath(); ctx.arc(cx, cy, r, Math.PI, Math.PI * 2);
     ctx.fillStyle = '#eb4d4b'; ctx.fill();
 
     ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
-    ctx.strokeStyle = '#2d3436'; ctx.lineWidth = 3.5; ctx.stroke();
-    ctx.fillStyle = '#2d3436'; ctx.fillRect(cx - r + 1, cy - 3.5, (r * 2) - 2, 7);
+    ctx.strokeStyle = '#2d3436'; ctx.lineWidth = 3.6; ctx.stroke();
+    ctx.fillStyle = '#2d3436'; ctx.fillRect(cx - r + 1, cy - 4, (r * 2) - 2, 8);
 
-    ctx.beginPath(); ctx.arc(cx, cy, 20, 0, Math.PI * 2);
+    // 中央白色開關與答案大字
+    ctx.beginPath(); ctx.arc(cx, cy, 22, 0, Math.PI * 2);
     ctx.fillStyle = '#2d3436'; ctx.fill();
-    ctx.beginPath(); ctx.arc(cx, cy, 17, 0, Math.PI * 2);
+    ctx.beginPath(); ctx.arc(cx, cy, 18.5, 0, Math.PI * 2);
     ctx.fillStyle = '#ffffff'; ctx.fill();
 
     ctx.fillStyle = '#2d3436';
-    ctx.font = '900 23px Arial';
+    ctx.font = '900 24px Arial';
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText(this.value, cx, cy + 1.5);
     ctx.restore();
   }
 }
 
-// ==================== 發球與判定 ====================
+// ==================== 發球與判定 (新尺寸落點分布) ====================
 function newRound() {
   if (!isPlaying) return;
 
-  if (configDiff === 'easy') {
-    const easy = [2, 3, 4, 5];
-    currentA = easy[Math.floor(Math.random() * easy.length)];
-  } else if (configDiff === 'boss') {
-    const boss = [6, 7, 8, 9];
-    currentA = boss[Math.floor(Math.random() * boss.length)];
-  } else {
-    currentA = Math.floor(Math.random() * 8) + 2;
-  }
-  currentB = Math.floor(Math.random() * 8) + 2;
+  if (selectedTables.length === 0) selectedTables = [1];
+  currentA = selectedTables[Math.floor(Math.random() * selectedTables.length)];
+  currentB = Math.floor(Math.random() * 10) + 1;
   rightAns = currentA * currentB;
 
   document.getElementById('questionLabel').innerText = `${currentA} × ${currentB} = ?`;
@@ -582,13 +763,14 @@ function newRound() {
   const options = [rightAns];
   while (options.length < 3) {
     const offset = (Math.floor(Math.random() * 4) + 1) * (Math.random() < 0.5 ? 1 : -1);
-    const fake = Math.max(4, rightAns + offset);
+    const fake = Math.max(1, rightAns + offset);
     if (!options.includes(fake)) options.push(fake);
   }
   options.sort(() => Math.random() - 0.5);
 
   balls = [];
-  const targetX = [175, 240, 305];
+  // 拓寬後皮卡丘守備落點：210 (前場), 290 (中場), 370 (網前)
+  const targetX = [210, 290, 370];
   targetX.sort(() => Math.random() - 0.5);
 
   const delayStep = (configSpeed <= 0.3) ? 120 : Math.round(Math.max(75, 28 / configSpeed));
@@ -608,7 +790,7 @@ function checkHit() {
     const dy = b.y - (player.y - 20);
     const dist = Math.hypot(dx, dy);
 
-    if (dist < b.radius + 55) {
+    if (dist < b.radius + 58) {
       b.hit = true;
       if (b.isCorrect) {
         score += 10;
@@ -617,13 +799,13 @@ function checkHit() {
         if (streak > maxStreak) maxStreak = streak;
 
         Sound.correct();
-        feedback = { text: `🎉 正確！${currentA} × ${currentB} = ${rightAns}`, color: "#10ac84", timer: 70 };
+        feedback = { text: `🎉 正確扣殺！${currentA} × ${currentB} = ${rightAns}`, color: "#10ac84", timer: 70 };
         balls.forEach(other => { if (!other.isCorrect) other.fading = true; });
         setTimeout(newRound, 1500);
       } else {
         streak = 0;
         Sound.wrong();
-        feedback = { text: `❌ 算錯囉，不是 ${b.value}`, color: "#ee5253", timer: 70 };
+        feedback = { text: `❌ 哎呀！算錯囉，不是 ${b.value}`, color: "#ee5253", timer: 70 };
         setTimeout(newRound, 1500);
       }
       document.getElementById('scoreLabel').innerText = `⭐ 得分: ${score}`;
@@ -632,24 +814,23 @@ function checkHit() {
     }
   }
 
-  // ★ 核心改動：正解球落地時靜音，啟動「暫停 3 秒學習算式卡」
+  // 正解球落地：靜音、啟動 3 秒大字算式複習卡
   const rightBall = balls.find(b => b.isCorrect);
   if (rightBall && rightBall.landed && !rightBall.hit) {
     streak = 0;
     document.getElementById('streakLabel').innerText = `🔥 連擊: 0`;
 
-    // 啟動 3 秒 (以 60 FPS 計為 180 幀) 暫停複習
     reviewPause.active = true;
     reviewPause.remainingFrames = 180;
     reviewPause.textFormula = `${currentA} × ${currentB} = ${rightAns}`;
 
-    // 清空球體，等待 3 秒結束後自動接續下一回合
     balls = [];
   }
 }
 
 // ==================== 按鍵與觸控監聽 ====================
 window.addEventListener('keydown', (e) => {
+  unlockAudioContext();
   if (e.code === 'KeyA' || e.code === 'ArrowLeft') { keys.left = true; e.preventDefault(); }
   if (e.code === 'KeyD' || e.code === 'ArrowRight') { keys.right = true; e.preventDefault(); }
   if (e.code === 'KeyW' || e.code === 'ArrowUp' || e.code === 'Space') { keys.jump = true; e.preventDefault(); }
@@ -663,7 +844,7 @@ window.addEventListener('keyup', (e) => {
 
 function bindBtn(id, prop) {
   const btn = document.getElementById(id);
-  const start = (e) => { e.preventDefault(); keys[prop] = true; };
+  const start = (e) => { e.preventDefault(); unlockAudioContext(); keys[prop] = true; };
   const end = (e) => { e.preventDefault(); keys[prop] = false; };
   btn.addEventListener('touchstart', start, { passive: false });
   btn.addEventListener('touchend', end, { passive: false });
@@ -675,11 +856,13 @@ bindBtn('btnLeft', 'left');
 bindBtn('btnRight', 'right');
 bindBtn('btnJump', 'jump');
 
+// 畫布點擊跟隨
 canvas.addEventListener('touchstart', (e) => {
+  unlockAudioContext();
   const rect = canvas.getBoundingClientRect();
   const tx = (e.touches[0].clientX - rect.left) * (canvas.width / rect.width);
-  if (tx < player.x - 20) { keys.left = true; keys.right = false; }
-  else if (tx > player.x + 20) { keys.right = true; keys.left = false; }
+  if (tx < player.x - 25) { keys.left = true; keys.right = false; }
+  else if (tx > player.x + 25) { keys.right = true; keys.left = false; }
 }, { passive: true });
 canvas.addEventListener('touchend', () => { keys.left = false; keys.right = false; }, { passive: true });
 
@@ -687,16 +870,15 @@ canvas.addEventListener('touchend', () => { keys.left = false; keys.right = fals
 function loop() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // 地面與球網
+  // 地面與排球網 (X=600 為對決中線)
   ctx.fillStyle = '#6ab04c'; ctx.fillRect(0, GROUND_Y, canvas.width, canvas.height - GROUND_Y);
-  ctx.fillStyle = '#badc58'; ctx.fillRect(0, GROUND_Y, canvas.width, 10);
-  ctx.fillStyle = '#dcdde1'; ctx.fillRect(520, 240, 12, GROUND_Y - 240);
-  ctx.fillStyle = '#eb4d4b'; ctx.fillRect(514, 235, 24, 10);
+  ctx.fillStyle = '#badc58'; ctx.fillRect(0, GROUND_Y, canvas.width, 12);
+  ctx.fillStyle = '#dcdde1'; ctx.fillRect(600, 270, 14, GROUND_Y - 270);
+  ctx.fillStyle = '#eb4d4b'; ctx.fillRect(593, 264, 28, 12);
 
-  // 實體更新與繪製
   player.update();
   player.draw();
-  enemy.draw();
+  ashEnemy.draw();
 
   for (let b of balls) {
     b.update();
@@ -704,17 +886,15 @@ function loop() {
   }
   checkHit();
 
-  // ★ 繪製 3 秒算式複習卡
+  // 3 秒大尺寸算式複習卡
   if (reviewPause.active) {
     reviewPause.remainingFrames--;
 
     ctx.save();
-    // 半透明背景聚焦卡片
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.48)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // 中央白色教學卡
-    const boxW = 540, boxH = 150;
+    const boxW = 600, boxH = 160;
     const boxX = (canvas.width - boxW) / 2;
     const boxY = (canvas.height - boxH) / 2 - 20;
 
@@ -722,51 +902,46 @@ function loop() {
     ctx.strokeStyle = '#f39c12';
     ctx.lineWidth = 5;
     ctx.beginPath();
-    ctx.roundRect(boxX, boxY, boxW, boxH, 20);
+    ctx.roundRect(boxX, boxY, boxW, boxH, 22);
     ctx.fill();
     ctx.stroke();
 
-    // 標題小字
     ctx.fillStyle = '#d35400';
-    ctx.font = 'bold 20px "Microsoft JhengHei", Arial';
+    ctx.font = 'bold 22px "Microsoft JhengHei", Arial';
     ctx.textAlign = 'center';
-    ctx.fillText("💡 記起來喔！完整算式與解答", canvas.width / 2, boxY + 40);
+    ctx.fillText("💡 記起來喔！完整算式與解答", canvas.width / 2, boxY + 44);
 
-    // 乘法大字解答
     ctx.fillStyle = '#c0392b';
-    ctx.font = '900 46px Arial, "Microsoft JhengHei"';
-    ctx.fillText(reviewPause.textFormula, canvas.width / 2, boxY + 95);
+    ctx.font = '900 52px Arial, "Microsoft JhengHei"';
+    ctx.fillText(reviewPause.textFormula, canvas.width / 2, boxY + 104);
 
-    // 倒數小秒數提示
     const secLeft = Math.ceil(reviewPause.remainingFrames / 60);
     ctx.fillStyle = '#7f8c8d';
-    ctx.font = 'bold 14px Arial';
-    ctx.fillText(`即將發下一球... (${secLeft}s)`, canvas.width / 2, boxY + 130);
+    ctx.font = 'bold 15px Arial';
+    ctx.fillText(`即將發下一球... (${secLeft}s)`, canvas.width / 2, boxY + 140);
 
     ctx.restore();
 
-    // 3 秒倒數完畢，解除暫停並發出下一題
     if (reviewPause.remainingFrames <= 0) {
       reviewPause.active = false;
       newRound();
     }
   }
 
-  // 即時回饋文字
+  // 即時扣殺反饋文字
   if (feedback.timer > 0 && !reviewPause.active) {
     feedback.timer--;
     ctx.save();
-    ctx.font = 'bold 26px "Microsoft JhengHei", Arial';
+    ctx.font = 'bold 28px "Microsoft JhengHei", Arial';
     ctx.fillStyle = feedback.color;
     ctx.textAlign = 'center';
-    ctx.fillText(feedback.text, canvas.width / 2, 75);
+    ctx.fillText(feedback.text, canvas.width / 2, 85);
     ctx.restore();
   }
 
   requestAnimationFrame(loop);
 }
 
-// 啟動主渲染，等待選單點擊開始
 loop();
 </script>
 </body>
