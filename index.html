@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-select=none, touch-action=manipulation">
-  <title>萌廚排球：九九乘法大冒險 (手機/平板觸控版)</title>
+  <title>萌廚排球：反應直覺特訓版</title>
   <style>
     * {
       box-sizing: border-box;
@@ -63,15 +63,25 @@
       border-radius: 12px;
       border: 2px solid #ffbe76;
     }
+    .combo-badge {
+      background: #ff7675;
+      color: #fff;
+      padding: 2px 10px;
+      border-radius: 12px;
+      font-size: 14px;
+      display: inline-block;
+      transition: transform 0.15s;
+    }
     .controls-bar {
       display: flex;
-      gap: 10px;
+      gap: 12px;
       align-items: center;
       justify-content: center;
       margin-bottom: 4px;
       font-size: 13px;
       color: #2d3436;
       font-weight: bold;
+      flex-wrap: wrap;
     }
     select {
       padding: 4px 8px;
@@ -97,7 +107,7 @@
       touch-action: none;
     }
     
-    /* 手機/平板專用虛擬觸控按鈕區 */
+    /* 虛擬觸控按鈕 */
     #touchControls {
       width: 95vw;
       max-width: 860px;
@@ -125,14 +135,12 @@
       font-weight: bold;
       color: #2d3436;
       cursor: pointer;
-      user-select: none;
       -webkit-tap-highlight-color: transparent;
       transition: transform 0.05s, background-color 0.05s;
     }
     .touch-btn:active, .touch-btn.active {
       transform: translateY(4px);
       background: #dfe6e9;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
     }
     .jump-btn {
       width: 80px;
@@ -174,9 +182,18 @@
     .medal-icon { font-size: 55px; margin-bottom: 2px; }
     .modal-box h2 { margin: 0; font-size: 24px; color: #2d3436; }
     .modal-box p { font-size: 16px; margin: 6px 0; color: #636e72; }
+    .missed-list {
+      background: #ffeaa7;
+      border-radius: 10px;
+      padding: 6px 12px;
+      margin: 8px 0;
+      font-size: 14px;
+      color: #d63031;
+      font-weight: bold;
+    }
     .restart-btn {
       margin-top: 10px;
-      padding: 8px 22px;
+      padding: 8px 24px;
       font-size: 16px;
       font-weight: bold;
       color: #fff;
@@ -184,6 +201,15 @@
       border: none;
       border-radius: 25px;
       cursor: pointer;
+    }
+    .tips {
+      margin-top: 6px;
+      font-size: 13px;
+      color: #2d3436;
+      background: rgba(255,255,255,0.9);
+      padding: 6px 16px;
+      border-radius: 12px;
+      text-align: center;
     }
   </style>
 </head>
@@ -194,21 +220,29 @@
       <div class="timer" id="timerDisplay">⏳ 倒數: 60s</div>
       <div class="question-title" id="mathQuestion">7 × 8 = ?</div>
       <div class="points" id="scoreDisplay">⭐ 得分: 0</div>
-      <div class="points" id="comboDisplay">🔥 連續: 0</div>
+      <div class="points" id="comboDisplay">🔥 <span class="combo-badge" id="comboBadge">連擊: 0</span></div>
     </div>
   </header>
 
   <div class="controls-bar">
-    <label for="speedSelect">☁️ 漂浮速度：</label>
-    <select id="speedSelect">
-      <option value="0.75" selected>超悠閒慢速（適合平板/手機）</option>
-      <option value="1.0">標準排球節奏</option>
-      <option value="1.25">小敏捷挑戰</option>
-    </select>
+    <div>
+      <label for="modeSelect">🎯 練習範圍：</label>
+      <select id="modeSelect">
+        <option value="boss" selected>🔥 大魔王特訓 (專攻 6~9 段)</option>
+        <option value="all">🌟 全段隨機 (2~9 段全面練習)</option>
+      </select>
+    </div>
+    <div>
+      <label for="speedSelect">☁️ 初始速度：</label>
+      <select id="speedSelect">
+        <option value="0.75" selected>超悠閒慢速</option>
+        <option value="0.95">標準排球節奏</option>
+        <option value="1.15">高手敏捷反應</option>
+      </select>
+    </div>
   </div>
 
   <div id="gameWrapper">
-    <!-- 內部邏輯維持 860x460，透過 CSS 等比例在行動裝置縮放 -->
     <canvas id="gameCanvas" width="860" height="460"></canvas>
 
     <!-- 結算視窗 -->
@@ -218,6 +252,7 @@
         <h2 id="medalTitle">特級神廚金牌！</h2>
         <p id="finalScoreText">總得分: 100 分</p>
         <p id="finalStatsText">答對: 10 題 ｜ 最高連擊: 5 次</p>
+        <div id="missedBox" class="missed-list" style="display:none;"></div>
         <button class="restart-btn" id="restartBtn">🔄 再挑戰一次</button>
       </div>
     </div>
@@ -232,9 +267,13 @@
     <button class="touch-btn jump-btn" id="btnJump">跳躍 ⬆️</button>
   </div>
 
+  <div class="tips">
+    ⚡ <b>反應特訓機制</b>：連續答對 3 題以上會啟動連擊加速；答錯的題目會記錄下來並在稍後再次出現複習！
+  </div>
+
 <script>
 /* ========================
-   1. 原生 Web Audio 音效引擎
+   1. 原生 Web Audio 音效
    ======================== */
 const AudioEngine = {
   ctx: null,
@@ -332,14 +371,17 @@ const AudioEngine = {
 };
 
 /* ========================
-   2. 遊戲參數與狀態
+   2. 遊戲參數與弱點題庫
    ======================== */
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-let speedFactor = 0.75;
+let baseSpeed = 0.75;
+let currentSpeed = 0.75;
+
 document.getElementById('speedSelect').addEventListener('change', (e) => {
-  speedFactor = parseFloat(e.target.value);
+  baseSpeed = parseFloat(e.target.value);
+  currentSpeed = baseSpeed;
 });
 
 const GROUND_Y = 410;
@@ -352,6 +394,10 @@ let timeLeft = 60;
 let timerInterval = null;
 let isGameOver = false;
 
+// 弱點收集池（答錯的題目會暫存於此，優先回訪）
+let missedQuestionsPool = [];
+let roundHistoryMissed = [];
+
 let num1 = 7, num2 = 8, rightAnswer = 56;
 let foodBalls = [];
 let roundActive = false;
@@ -359,14 +405,8 @@ let feedbackText = "";
 let feedbackTimer = 0;
 let feedbackColor = "#27ae60";
 
-// 輸入狀態集合（鍵盤 + 螢幕虛擬鍵整合）
-const input = {
-  left: false,
-  right: false,
-  jump: false
-};
+const input = { left: false, right: false, jump: false };
 
-// 鍵盤監聽
 window.addEventListener('keydown', (e) => {
   AudioEngine.init();
   if (e.code === 'KeyA' || e.code === 'ArrowLeft') input.left = true;
@@ -379,30 +419,22 @@ window.addEventListener('keyup', (e) => {
   if (e.code === 'KeyW' || e.code === 'ArrowUp' || e.code === 'Space') input.jump = false;
 });
 
-/* ========================
-   3. 手機/平板 虛擬觸控與手勢綁定
-   ======================== */
 function bindTouchButton(elementId, actionKey) {
   const btn = document.getElementById(elementId);
-  
   const startHandler = (e) => {
     e.preventDefault();
     AudioEngine.init();
     input[actionKey] = true;
     btn.classList.add('active');
   };
-  
   const endHandler = (e) => {
     e.preventDefault();
     input[actionKey] = false;
     btn.classList.remove('active');
   };
-
   btn.addEventListener('touchstart', startHandler, { passive: false });
   btn.addEventListener('touchend', endHandler, { passive: false });
   btn.addEventListener('touchcancel', endHandler, { passive: false });
-
-  // 同時相容滑鼠點擊
   btn.addEventListener('mousedown', startHandler);
   btn.addEventListener('mouseup', endHandler);
   btn.addEventListener('mouseleave', endHandler);
@@ -412,14 +444,11 @@ bindTouchButton('btnLeft', 'left');
 bindTouchButton('btnRight', 'right');
 bindTouchButton('btnJump', 'jump');
 
-// 畫布直接點擊跟隨（適合直覺觸控）
 canvas.addEventListener('touchstart', (e) => {
   AudioEngine.init();
   const rect = canvas.getBoundingClientRect();
   const scaleX = canvas.width / rect.width;
   const touchX = (e.touches[0].clientX - rect.left) * scaleX;
-  
-  // 點擊玩家左側往左走，點擊玩家右側往右走
   if (touchX < player.x - 15) {
     input.left = true;
     input.right = false;
@@ -435,7 +464,7 @@ canvas.addEventListener('touchend', () => {
 }, { passive: true });
 
 /* ========================
-   4. 計時器與結算邏輯
+   3. 計時器與結算分析
    ======================== */
 function startTimer() {
   clearInterval(timerInterval);
@@ -482,6 +511,17 @@ function endGame() {
   document.getElementById('medalTitle').innerText = title;
   document.getElementById('finalScoreText').innerText = `總得分: ${score} 分`;
   document.getElementById('finalStatsText').innerText = `答對: ${correctCount} 題 ｜ 最高連勝: ${maxStreak} 次`;
+
+  // 若有錯題，在結算面板列出給家長與老師參考
+  const missedBox = document.getElementById('missedBox');
+  if (roundHistoryMissed.length > 0) {
+    const uniqueMissed = [...new Set(roundHistoryMissed)];
+    missedBox.innerHTML = `⚠️ 建議多加強的弱點題型：<br>${uniqueMissed.join('、 ')}`;
+    missedBox.style.display = 'block';
+  } else {
+    missedBox.style.display = 'none';
+  }
+
   document.getElementById('modalOverlay').style.display = 'flex';
 }
 
@@ -492,19 +532,47 @@ document.getElementById('restartBtn').addEventListener('click', () => {
   streak = 0;
   maxStreak = 0;
   correctCount = 0;
+  currentSpeed = baseSpeed;
+  roundHistoryMissed = [];
+  missedQuestionsPool = [];
   document.getElementById('scoreDisplay').innerText = `⭐ 得分: 0`;
-  document.getElementById('comboDisplay').innerText = `🔥 連續: 0`;
+  document.getElementById('comboBadge').innerText = `連擊: 0`;
   startTimer();
   setupNewRound();
 });
 
+/* ========================
+   4. 題目生成 (弱點複習 + 連擊加速)
+   ======================== */
 function setupNewRound() {
   if (isGameOver) return;
 
-  num1 = Math.floor(Math.random() * 8) + 2;
-  num2 = Math.floor(Math.random() * 8) + 2;
+  const mode = document.getElementById('modeSelect').value;
+
+  // 1. 若弱點池有錯題，以 40% 機率優先重複出題強化記憶
+  if (missedQuestionsPool.length > 0 && Math.random() < 0.45) {
+    const pick = missedQuestionsPool.shift();
+    num1 = pick.a;
+    num2 = pick.b;
+  } else {
+    if (mode === 'boss') {
+      // 專門出大魔王段數 (6, 7, 8, 9)
+      const bossDigits = [6, 7, 8, 9];
+      num1 = bossDigits[Math.floor(Math.random() * bossDigits.length)];
+      num2 = Math.floor(Math.random() * 8) + 2; // 2 ~ 9
+    } else {
+      // 全段 2 ~ 9
+      num1 = Math.floor(Math.random() * 8) + 2;
+      num2 = Math.floor(Math.random() * 8) + 2;
+    }
+  }
+
   rightAnswer = num1 * num2;
   document.getElementById('mathQuestion').innerText = `${num1} × ${num2} = ?`;
+
+  // 2. 連擊加速公式：每連勝 3 題，球速提升 8%（上限為 1.4 倍）
+  const speedBonus = Math.min(0.4, Math.floor(streak / 3) * 0.08);
+  currentSpeed = baseSpeed + speedBonus;
 
   npcChef.serveAnimationTimer = 25;
   AudioEngine.playServe();
@@ -533,7 +601,7 @@ function setupNewRound() {
 }
 
 /* ========================
-   5. 角色與物體
+   5. 角色與實體
    ======================== */
 class CutePikachuChef {
   constructor(x, y) {
@@ -652,7 +720,7 @@ class CutePikachuChef {
     ctx.arc(cx, cy + 4, 3.5, 0, Math.PI);
     ctx.stroke();
 
-    // 廚師高帽
+    // 廚師帽
     ctx.fillStyle = '#ffffff';
     ctx.strokeStyle = '#2d3436';
     ctx.lineWidth = 2.5;
@@ -792,8 +860,8 @@ class FloatAnswerBall {
     }
 
     if (this.isHit) {
-      this.y += this.vy * speedFactor;
-      this.x += this.vx * speedFactor;
+      this.y += this.vy * currentSpeed;
+      this.x += this.vx * currentSpeed;
       this.vy += 0.4;
       return;
     }
@@ -805,9 +873,9 @@ class FloatAnswerBall {
       currentGravity = 0.045;
     }
 
-    this.vy += currentGravity * speedFactor;
-    this.x += this.vx * speedFactor;
-    this.y += (this.vy + Math.sin(this.floatTimer) * 0.3) * speedFactor;
+    this.vy += currentGravity * currentSpeed;
+    this.x += this.vx * currentSpeed;
+    this.y += (this.vy + Math.sin(this.floatTimer) * 0.3) * currentSpeed;
 
     if (this.y + this.radius >= GROUND_Y) {
       this.y = GROUND_Y - this.radius;
@@ -821,7 +889,6 @@ class FloatAnswerBall {
     if (this.delay > 0) return;
 
     ctx.save();
-    // 投影落點
     ctx.beginPath();
     ctx.ellipse(this.x, GROUND_Y, this.radius * 0.85, 7, 0, 0, Math.PI * 2);
     ctx.fillStyle = 'rgba(0,0,0,0.15)';
@@ -888,21 +955,28 @@ function checkCollisions() {
 
         ball.vx = 7;
         ball.vy = -12;
-        feedbackText = `🎉 答對了！${num1} × ${num2} = ${rightAnswer} ✨`;
+        
+        let speedNotice = streak >= 3 ? " ⚡速度提升！" : "";
+        feedbackText = `🎉 答對了！${num1} × ${num2} = ${rightAnswer}${speedNotice}`;
         feedbackColor = "#10ac84";
 
         AudioEngine.playCorrect();
         document.getElementById('scoreDisplay').innerText = `⭐ 得分: ${score}`;
-        document.getElementById('comboDisplay').innerText = `🔥 連續: ${streak}`;
+        document.getElementById('comboBadge').innerText = `連擊: ${streak}`;
       } else {
+        // 答錯：加入弱點池
+        missedQuestionsPool.push({ a: num1, b: num2 });
+        roundHistoryMissed.push(`${num1} × ${num2} = ${rightAnswer}`);
+
         streak = 0;
+        currentSpeed = baseSpeed; // 答錯速度重置
         ball.vx = -3;
         ball.vy = -5;
         feedbackText = `❌ 哎呀！算錯囉，不是 ${ball.value}`;
         feedbackColor = "#ee5253";
 
         AudioEngine.playWrong();
-        document.getElementById('comboDisplay').innerText = `🔥 連續: 0`;
+        document.getElementById('comboBadge').innerText = `連擊: 0`;
       }
 
       feedbackTimer = 90;
@@ -912,14 +986,19 @@ function checkCollisions() {
     }
   }
 
+  // 若球全部落地（反應太慢漏接）
   const allEnded = foodBalls.every(b => b.delay === 0 && (b.landed || b.isHit));
   if (allEnded && roundActive) {
+    missedQuestionsPool.push({ a: num1, b: num2 });
+    roundHistoryMissed.push(`${num1} × ${num2} = ${rightAnswer}`);
+
     streak = 0;
+    currentSpeed = baseSpeed;
     feedbackText = `⏰ 落地了！正解是 ${rightAnswer}`;
     feedbackColor = "#e67e22";
     feedbackTimer = 90;
     AudioEngine.playWrong();
-    document.getElementById('comboDisplay').innerText = `🔥 連續: 0`;
+    document.getElementById('comboBadge').innerText = `連擊: 0`;
     roundActive = false;
     setTimeout(setupNewRound, 1600);
   }
