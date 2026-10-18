@@ -2,760 +2,410 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-select=none, touch-action=manipulation">
-  <title>萌廚排球：九九乘法特訓版</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-select=none">
+  <title>寶貝球排球：神廚九九乘法特訓</title>
   <style>
-    * {
-      box-sizing: border-box;
-      -webkit-touch-callout: none;
-      -webkit-user-select: none;
-      user-select: none;
-    }
+    * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
     body {
-      margin: 0;
-      padding: 0;
+      margin: 0; padding: 10px 0;
       background: #74b9ff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      font-family: 'Comic Sans MS', 'Microsoft JhengHei', sans-serif;
-      touch-action: manipulation;
-      overflow-x: hidden;
+      display: flex; flex-direction: column; align-items: center;
+      font-family: Arial, "Microsoft JhengHei", sans-serif;
     }
-    header {
-      margin-top: 6px;
-      text-align: center;
-      width: 95%;
-      max-width: 860px;
+    .hud {
+      display: flex; gap: 10px; align-items: center; justify-content: space-between;
+      background: #fff; padding: 6px 16px; border-radius: 30px;
+      margin-bottom: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+      flex-wrap: wrap; width: 95vw; max-width: 860px;
     }
-    .score-board {
-      background: #ffffff;
-      padding: 6px 16px;
-      border-radius: 30px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      margin-bottom: 6px;
-      flex-wrap: wrap;
-      gap: 8px;
+    .hud-left { display: flex; gap: 8px; align-items: center; }
+    .btn-top {
+      background: #0984e3; color: #fff; border: none; padding: 6px 12px;
+      border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 13px;
     }
-    .question-title {
-      font-size: 28px;
-      color: #d63031;
-      font-weight: 900;
-      background: #ffeaa7;
-      padding: 4px 20px;
-      border-radius: 20px;
+    .btn-top.sound-off { background: #778ca3; }
+    .question-box {
+      font-size: 26px; font-weight: 900; color: #d63031;
+      background: #ffeaa7; padding: 4px 18px; border-radius: 20px;
       border: 3px dashed #e17055;
     }
-    .points {
-      font-size: 16px;
-      font-weight: bold;
-      color: #2d3436;
-    }
-    .timer {
-      font-size: 16px;
-      font-weight: 900;
-      color: #e17055;
-      background: #fff3cd;
-      padding: 4px 12px;
-      border-radius: 12px;
-      border: 2px solid #ffbe76;
-    }
-    .combo-badge {
-      background: #ff7675;
-      color: #fff;
-      padding: 2px 10px;
-      border-radius: 12px;
-      font-size: 14px;
-      display: inline-block;
-    }
-    .pause-btn-top {
-      background: #0984e3;
-      color: white;
-      border: none;
-      padding: 6px 14px;
-      border-radius: 20px;
-      font-size: 13px;
-      font-weight: bold;
-      cursor: pointer;
-      box-shadow: 0 3px 6px rgba(9, 132, 227, 0.3);
-    }
+    .status-text { font-size: 15px; font-weight: bold; color: #2d3436; }
     #gameWrapper {
       position: relative;
-      width: 95vw;
-      max-width: 860px;
+      width: 95vw; max-width: 860px;
     }
     canvas {
-      width: 100%;
-      height: auto;
       background: linear-gradient(to bottom, #ffeaa7 0%, #ffbe76 100%);
-      border: 5px solid #fdcb6e;
-      border-radius: 20px;
+      border: 5px solid #fdcb6e; border-radius: 20px;
       box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-      display: block;
-      touch-action: none;
+      display: block; width: 100%; height: auto;
     }
 
-    /* 懸浮遮罩面板 (準備設定 & 結算) */
-    .overlay-screen {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.72);
-      border-radius: 20px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      backdrop-filter: blur(5px);
-      z-index: 10;
+    /* 懸浮遮罩面板 (主設定與結算) */
+    .overlay-modal {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.75); border-radius: 20px;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      backdrop-filter: blur(5px); z-index: 100;
     }
-    .panel-box {
-      background: #ffffff;
-      padding: 22px 28px;
-      border-radius: 24px;
-      text-align: center;
-      box-shadow: 0 12px 35px rgba(0,0,0,0.35);
-      border: 5px solid #ffbe76;
-      width: 88%;
-      max-width: 480px;
-      animation: popIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    .card-box {
+      background: #ffffff; padding: 16px 20px; border-radius: 24px;
+      text-align: center; border: 5px solid #ffbe76;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.35); width: 92%; max-width: 530px;
+      animation: pop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
-    @keyframes popIn {
-      0% { transform: scale(0.7); opacity: 0; }
+    @keyframes pop {
+      0% { transform: scale(0.65); opacity: 0; }
       100% { transform: scale(1); opacity: 1; }
     }
-    .panel-title {
-      margin: 0 0 14px 0;
-      font-size: 24px;
-      color: #2d3436;
-      font-weight: 900;
-    }
-    .setting-group {
-      margin-bottom: 12px;
-      text-align: left;
-    }
-    .setting-label {
-      font-size: 14px;
-      font-weight: bold;
-      color: #636e72;
-      margin-bottom: 6px;
-      display: block;
-    }
-    .btn-options {
-      display: flex;
-      gap: 8px;
-    }
+    .card-title { font-size: 22px; font-weight: 900; color: #2d3436; margin: 0 0 8px 0; }
+    .setting-row { margin-bottom: 8px; text-align: left; }
+    .setting-label { font-size: 13px; font-weight: bold; color: #636e72; margin-bottom: 3px; display: block; }
+    .opt-group { display: flex; gap: 6px; }
     .opt-btn {
-      flex: 1;
-      padding: 8px 4px;
-      border: 2px solid #dfe6e9;
-      background: #f8f9fa;
-      border-radius: 12px;
-      font-size: 13px;
-      font-weight: bold;
-      color: #2d3436;
-      cursor: pointer;
-      transition: all 0.15s;
+      flex: 1; padding: 6px 3px; border: 2px solid #dfe6e9; background: #f8f9fa;
+      border-radius: 12px; font-size: 12px; font-weight: bold; color: #2d3436;
+      cursor: pointer; line-height: 1.3;
     }
-    .opt-btn.selected {
-      border-color: #e17055;
-      background: #ffeaa7;
-      color: #d63031;
-      transform: scale(1.02);
-      box-shadow: 0 3px 8px rgba(225, 112, 85, 0.25);
+    .opt-btn.active {
+      border-color: #e17055; background: #ffeaa7; color: #d63031;
+      transform: scale(1.02); box-shadow: 0 3px 6px rgba(225, 112, 85, 0.25);
     }
-    .start-big-btn {
-      width: 100%;
-      margin-top: 10px;
-      padding: 12px;
-      font-size: 19px;
-      font-weight: 900;
-      color: #fff;
-      background: #10ac84;
-      border: none;
-      border-radius: 30px;
-      cursor: pointer;
-      box-shadow: 0 6px 14px rgba(16, 172, 132, 0.4);
-      transition: transform 0.1s, background-color 0.1s;
+    .btn-main-action {
+      width: 100%; margin-top: 8px; padding: 11px; font-size: 18px; font-weight: 900;
+      color: #fff; background: #10ac84; border: none; border-radius: 30px;
+      cursor: pointer; box-shadow: 0 5px 15px rgba(16, 172, 132, 0.4);
     }
-    .start-big-btn:hover { background: #1dd1a1; }
-    .start-big-btn:active { transform: scale(0.98); }
+    .btn-main-action:active { transform: scale(0.97); }
 
-    /* 結算特有元件 */
-    .medal-icon { font-size: 55px; margin-bottom: 2px; }
-    .missed-list {
-      background: #ffeaa7;
-      border-radius: 10px;
-      padding: 6px 12px;
-      margin: 8px 0;
-      font-size: 13px;
-      color: #d63031;
-      font-weight: bold;
-      text-align: left;
-      max-height: 70px;
-      overflow-y: auto;
-    }
+    /* 頒獎典禮元件 */
+    .medal-icon { font-size: 60px; margin-bottom: 2px; }
+    .award-text { font-size: 16px; font-weight: bold; color: #636e72; margin: 6px 0; }
 
-    /* 虛擬觸控按鈕 */
-    #touchControls {
-      width: 95vw;
-      max-width: 860px;
-      margin-top: 8px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0 10px;
+    /* 觸控控制列 */
+    .controls-row {
+      display: flex; justify-content: space-between; align-items: center;
+      width: 95vw; max-width: 860px; margin-top: 10px; padding: 0 10px;
     }
-    .d-pad { display: flex; gap: 14px; }
-    .touch-btn {
-      width: 68px;
-      height: 68px;
-      border-radius: 50%;
-      border: none;
-      background: #ffffff;
-      box-shadow: 0 6px 12px rgba(0,0,0,0.2), inset 0 -4px 0 rgba(0,0,0,0.1);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-size: 26px;
-      font-weight: bold;
-      color: #2d3436;
-      cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
-      transition: transform 0.05s, background-color 0.05s;
+    .d-pad { display: flex; gap: 12px; }
+    .ctrl-btn {
+      width: 70px; height: 70px; border-radius: 50%; border: none;
+      background: #fff; font-size: 26px; font-weight: bold; color: #2d3436;
+      box-shadow: 0 5px 12px rgba(0,0,0,0.2); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
     }
-    .touch-btn:active, .touch-btn.active {
-      transform: translateY(4px);
-      background: #dfe6e9;
+    .ctrl-btn:active { transform: translateY(3px); background: #dfe6e9; }
+    .btn-jump {
+      width: 80px; height: 80px; background: #ff7675; color: #fff;
+      font-size: 20px; font-weight: 900;
     }
-    .jump-btn {
-      width: 80px;
-      height: 80px;
-      background: #ff7675;
-      color: #ffffff;
-      font-size: 20px;
-      font-weight: 900;
-      box-shadow: 0 6px 12px rgba(235, 77, 75, 0.4), inset 0 -4px 0 rgba(0,0,0,0.15);
-    }
-    .jump-btn:active, .jump-btn.active { background: #d63031; }
-
-    .tips {
-      margin-top: 6px;
-      font-size: 13px;
-      color: #2d3436;
-      background: rgba(255,255,255,0.9);
-      padding: 6px 16px;
-      border-radius: 12px;
-      text-align: center;
-    }
+    .btn-jump:active { background: #d63031; }
   </style>
 </head>
 <body>
 
-  <header>
-    <div class="score-board">
-      <button class="pause-btn-top" id="btnPauseGame">⏸️ 設定 / 暫停</button>
-      <div class="timer" id="timerDisplay">⏳ 倒數: 60s</div>
-      <div class="question-title" id="mathQuestion">準備中...</div>
-      <div class="points" id="scoreDisplay">⭐ 得分: 0</div>
-      <div class="points" id="comboDisplay">🔥 <span class="combo-badge" id="comboBadge">連擊: 0</span></div>
+  <div class="hud">
+    <div class="hud-left">
+      <button class="btn-top" id="btnOpenMenu">⚙️ 設定選單</button>
+      <button class="btn-top" id="btnAudioToggle">🔊 音效：開</button>
     </div>
-  </header>
+    <div class="status-text" id="timerLabel">⏳ 倒數: 120s</div>
+    <div class="question-box" id="questionLabel">請先確認設定</div>
+    <div class="status-text" id="scoreLabel">⭐ 得分: 0</div>
+    <div class="status-text" id="streakLabel">🔥 連擊: 0</div>
+  </div>
 
   <div id="gameWrapper">
     <canvas id="gameCanvas" width="860" height="460"></canvas>
 
-    <!-- 1. 遊戲開始前 / 暫停 / 重新挑戰時的設定面板 -->
-    <div id="setupModal" class="overlay-screen">
-      <div class="panel-box">
-        <h2 class="panel-title" id="setupModalTitle">🍳 主廚準備出餐囉！</h2>
+    <!-- 1. 開局前設定選單 -->
+    <div class="overlay-modal" id="menuModal">
+      <div class="card-box">
+        <h2 class="card-title">🔴 寶貝球排球：挑戰設定</h2>
         
-        <!-- 難易度選擇 -->
-        <div class="setting-group">
-          <span class="setting-label">🎯 選擇難度（題庫段數）：</span>
-          <div class="btn-options" id="diffOptions">
+        <!-- 時限 -->
+        <div class="setting-row">
+          <span class="setting-label">⏱️ 選擇時限：</span>
+          <div class="opt-group" id="grpTime">
+            <button class="opt-btn" data-val="60">⚡ 1 分鐘<br>(熱身)</button>
+            <button class="opt-btn active" data-val="120">⏳ 2 分鐘<br>(標準)</button>
+            <button class="opt-btn" data-val="180">🏆 3 分鐘<br>(耐力)</button>
+          </div>
+        </div>
+
+        <!-- 關卡難度 -->
+        <div class="setting-row">
+          <span class="setting-label">🎯 選擇關卡：</span>
+          <div class="opt-group" id="grpDiff">
             <button class="opt-btn" data-val="easy">🌱 初階基礎<br>(2~5段)</button>
-            <button class="opt-btn selected" data-val="boss">🔥 大魔王特訓<br>(6~9段)</button>
+            <button class="opt-btn active" data-val="boss">🔥 大魔王特訓<br>(6~9段)</button>
             <button class="opt-btn" data-val="all">🌟 全段挑戰<br>(2~9段)</button>
           </div>
         </div>
 
-        <!-- 速度選擇 -->
-        <div class="setting-group">
-          <span class="setting-label">☁️ 選擇食材飄浮速度：</span>
-          <div class="btn-options" id="speedOptions">
-            <button class="opt-btn selected" data-val="0.7">超慢飄浮<br>(安心算)</button>
-            <button class="opt-btn" data-val="0.95">標準排球<br>(順暢)</button>
-            <button class="opt-btn" data-val="1.2">敏捷衝刺<br>(反應挑戰)</button>
+        <!-- 速度 -->
+        <div class="setting-row">
+          <span class="setting-label">☁️ 料理速度：</span>
+          <div class="opt-group" id="grpSpeed">
+            <button class="opt-btn active" data-val="0.25">🎈 慢火烘焙<br>(0.25x 悠閒2秒發)</button>
+            <button class="opt-btn" data-val="0.55">🍳 暖心料理<br>(0.55x)</button>
+            <button class="opt-btn" data-val="0.85">🔥 快炒對決<br>(0.85x)</button>
+            <button class="opt-btn" data-val="1.0" style="color:#d63031;">⚡ 終極快手<br>(1.0x)</button>
           </div>
         </div>
 
-        <button class="start-big-btn" id="btnConfirmStart">🚀 開始挑戰出餐！</button>
+        <!-- 音效開關 -->
+        <div class="setting-row">
+          <span class="setting-label">🔊 音效開關：</span>
+          <div class="opt-group" id="grpSound">
+            <button class="opt-btn active" data-val="on">🔊 開啟音效</button>
+            <button class="opt-btn" data-val="off">🔇 靜音模式</button>
+          </div>
+        </div>
+
+        <button class="btn-main-action" id="btnStartGame">🚀 開始挑戰出餐！</button>
       </div>
     </div>
 
-    <!-- 2. 60秒結算面板 -->
-    <div id="resultModal" class="overlay-screen" style="display: none;">
-      <div class="panel-box">
-        <div class="medal-icon" id="medalIcon">🥇</div>
-        <h2 id="medalTitle" style="margin: 0; font-size: 24px; color: #2d3436;">特級神廚金牌！</h2>
-        <p id="finalScoreText" style="font-size: 16px; margin: 6px 0; color: #636e72;">總得分: 100 分</p>
-        <p id="finalStatsText" style="font-size: 15px; margin: 4px 0; color: #636e72;">答對: 10 題 ｜ 最高連擊: 5 次</p>
-        <div id="missedBox" class="missed-list" style="display: none;"></div>
-        <button class="start-big-btn" id="btnRetryFromEnd" style="background:#0984e3;">🔄 再挑戰一次</button>
+    <!-- 2. 結算頒獎畫面 -->
+    <div class="overlay-modal" id="awardModal" style="display: none;">
+      <div class="card-box">
+        <div class="medal-icon" id="awardMedal">🥇</div>
+        <h2 class="card-title" id="awardTitle">大師球特級神廚金牌！</h2>
+        <div class="award-text" id="awardScore">總得分: 100 分</div>
+        <div class="award-text" id="awardDetails">答對: 10 題 ｜ 最高連擊: 5 次</div>
+        <button class="btn-main-action" id="btnReturnMenu">🔄 返回設定 / 再玩一局</button>
       </div>
     </div>
   </div>
 
-  <!-- 行動平板與手機虛擬按鈕 -->
-  <div id="touchControls">
+  <div class="controls-row">
     <div class="d-pad">
-      <button class="touch-btn" id="btnLeft">◀</button>
-      <button class="touch-btn" id="btnRight">▶</button>
+      <button class="ctrl-btn" id="btnLeft">◀</button>
+      <button class="ctrl-btn" id="btnRight">▶</button>
     </div>
-    <button class="touch-btn jump-btn" id="btnJump">跳躍 ⬆️</button>
-  </div>
-
-  <div class="tips">
-    💡 提示：按頂端「⏸️ 設定 / 暫停」可隨時調整難度；頂球時大聲喊出答案能更快練成直覺反射！
+    <button class="ctrl-btn btn-jump" id="btnJump">跳躍 ⬆</button>
   </div>
 
 <script>
-/* ========================
-   1. 原生 Web Audio 音效引擎
-   ======================== */
-const AudioEngine = {
-  ctx: null,
-  init() {
-    if (!this.ctx) {
-      const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      this.ctx = new AudioCtx();
+// ==================== 音效引擎 ====================
+let audioEnabled = true;
+let audioCtx = null;
+
+function safeTone(freq, type = 'sine', duration = 0.15) {
+  if (!audioEnabled) return;
+  try {
+    if (!audioCtx) {
+      const AudioClass = window.AudioContext || window.webkitAudioContext;
+      if (AudioClass) audioCtx = new AudioClass();
     }
-    if (this.ctx.state === 'suspended') {
-      this.ctx.resume();
+    if (audioCtx && audioCtx.state === 'suspended') {
+      audioCtx.resume().catch(() => {});
     }
-  },
-  playJump() {
-    this.init();
-    const now = this.ctx.currentTime;
-    const osc = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(260, now);
-    osc.frequency.exponentialRampToValueAtTime(580, now + 0.15);
-    gain.gain.setValueAtTime(0.2, now);
-    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
-    osc.connect(gain);
-    gain.connect(this.ctx.destination);
-    osc.start(now);
-    osc.stop(now + 0.16);
-  },
-  playServe() {
-    this.init();
-    const now = this.ctx.currentTime;
-    const osc = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
-    osc.type = 'triangle';
-    osc.frequency.setValueAtTime(320, now);
-    osc.frequency.exponentialRampToValueAtTime(700, now + 0.22);
+    if (!audioCtx) return;
+
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    const now = audioCtx.currentTime;
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, now);
     gain.gain.setValueAtTime(0.18, now);
-    gain.gain.linearRampToValueAtTime(0.01, now + 0.22);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
     osc.connect(gain);
-    gain.connect(this.ctx.destination);
+    gain.connect(audioCtx.destination);
     osc.start(now);
-    osc.stop(now + 0.23);
+    osc.stop(now + duration + 0.02);
+  } catch(e) {}
+}
+
+const Sound = {
+  jump: () => safeTone(450, 'sine', 0.12),
+  serve: () => safeTone(520, 'triangle', 0.15),
+  correct: () => {
+    safeTone(523, 'sine', 0.1);
+    setTimeout(() => safeTone(659, 'sine', 0.1), 80);
+    setTimeout(() => safeTone(784, 'sine', 0.2), 160);
   },
-  playCorrect() {
-    this.init();
-    const notes = [523.25, 659.25, 783.99, 1046.50];
-    notes.forEach((freq, idx) => {
-      const now = this.ctx.currentTime + idx * 0.06;
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(freq, now);
-      gain.gain.setValueAtTime(0.22, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
-      osc.connect(gain);
-      gain.connect(this.ctx.destination);
-      osc.start(now);
-      osc.stop(now + 0.36);
-    });
-  },
-  playWrong() {
-    this.init();
-    const now = this.ctx.currentTime;
-    const osc = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
-    osc.type = 'sawtooth';
-    osc.frequency.setValueAtTime(160, now);
-    osc.frequency.linearRampToValueAtTime(100, now + 0.25);
-    gain.gain.setValueAtTime(0.25, now);
-    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
-    osc.connect(gain);
-    gain.connect(this.ctx.destination);
-    osc.start(now);
-    osc.stop(now + 0.26);
-  },
-  playFanfare() {
-    this.init();
-    const chords = [
-      { f: 523.25, t: 0.0 }, { f: 659.25, t: 0.12 },
-      { f: 783.99, t: 0.24 }, { f: 1046.50, t: 0.40 }
-    ];
-    chords.forEach(c => {
-      const now = this.ctx.currentTime + c.t;
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(c.f, now);
-      gain.gain.setValueAtTime(0.3, now);
-      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
-      osc.connect(gain);
-      gain.connect(this.ctx.destination);
-      osc.start(now);
-      osc.stop(now + 0.65);
-    });
+  wrong: () => safeTone(150, 'sawtooth', 0.22),
+  fanfare: () => {
+    safeTone(523, 'triangle', 0.15);
+    setTimeout(() => safeTone(659, 'triangle', 0.15), 140);
+    setTimeout(() => safeTone(784, 'triangle', 0.2), 280);
+    setTimeout(() => safeTone(1046, 'triangle', 0.45), 440);
   }
 };
 
-/* ========================
-   2. 遊戲參數與狀態
-   ======================== */
+// ==================== 遊戲狀態與參數 ====================
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
+const GROUND_Y = 405;
 
-const GROUND_Y = 410;
+let configDuration = 120;
+let configDiff = 'boss';
+let configSpeed = 0.25;
+
+let isPlaying = false;
 let score = 0;
 let streak = 0;
 let maxStreak = 0;
 let correctCount = 0;
+let timeLeft = 120;
+let gameTimer = null;
 
-let timeLeft = 60;
-let timerInterval = null;
-let isPaused = true;      // 預設為暫停（等待設定確認）
-let isGameOver = false;
+let currentA = 7, currentB = 8, rightAns = 56;
+let balls = [];
+let feedback = { text: "", color: "#27ae60", timer: 0 };
 
-// 選擇的難度與速度參數
-let selectedDifficulty = 'boss';
-let baseSpeed = 0.7;
-let currentSpeed = 0.7;
+// ★ 落地學習複習暫停狀態
+let reviewPause = { active: false, remainingFrames: 0, textFormula: "" };
 
-// 錯題收集
-let missedQuestionsPool = [];
-let roundHistoryMissed = [];
+const keys = { left: false, right: false, jump: false };
 
-let num1 = 7, num2 = 8, rightAnswer = 56;
-let foodBalls = [];
-let roundActive = false;
-let feedbackText = "";
-let feedbackTimer = 0;
-let feedbackColor = "#27ae60";
-
-const input = { left: false, right: false, jump: false };
-
-/* ========================
-   3. 暫停畫面與選項互動
-   ======================== */
-const setupModal = document.getElementById('setupModal');
-const resultModal = document.getElementById('resultModal');
-
-// 綁定難度選項切換按鈕
-document.querySelectorAll('#diffOptions .opt-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('#diffOptions .opt-btn').forEach(b => b.classList.remove('selected'));
-    btn.classList.add('selected');
-    selectedDifficulty = btn.dataset.val;
+// ==================== 設定面板選項切換監聽 ====================
+function setupOptionGroup(groupId, callback) {
+  document.querySelectorAll(`#${groupId} .opt-btn`).forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll(`#${groupId} .opt-btn`).forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      callback(btn.dataset.val);
+    });
   });
-});
-
-// 綁定速度選項切換按鈕
-document.querySelectorAll('#speedOptions .opt-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('#speedOptions .opt-btn').forEach(b => b.classList.remove('selected'));
-    btn.classList.add('selected');
-    baseSpeed = parseFloat(btn.dataset.val);
-    currentSpeed = baseSpeed;
-  });
-});
-
-// 點擊「開始挑戰」/「繼續遊戲」
-document.getElementById('btnConfirmStart').addEventListener('click', () => {
-  setupModal.style.display = 'none';
-  isPaused = false;
-  AudioEngine.init();
-
-  if (isGameOver || timeLeft <= 0) {
-    // 全新一局重開
-    startNewGame();
-  } else if (!roundActive && foodBalls.length === 0) {
-    // 首次進入開局
-    startNewGame();
-  } else {
-    // 暫停後繼續
-    resumeTimer();
-  }
-});
-
-// 頂端隨時暫停按鈕
-document.getElementById('btnPauseGame').addEventListener('click', () => {
-  pauseGame();
-});
-
-function pauseGame() {
-  if (isGameOver) return;
-  isPaused = true;
-  clearInterval(timerInterval);
-  document.getElementById('setupModalTitle').innerText = "⏸️ 遊戲暫停中，微調設定：";
-  document.getElementById('btnConfirmStart').innerText = "▶️ 繼續挑戰出餐！";
-  setupModal.style.display = 'flex';
 }
 
-// 結算畫面點擊「再挑戰一次」
-document.getElementById('btnRetryFromEnd').addEventListener('click', () => {
-  resultModal.style.display = 'none';
-  document.getElementById('setupModalTitle').innerText = "🔄 準備再挑戰一次！";
-  document.getElementById('btnConfirmStart').innerText = "🚀 開始全新一局！";
-  setupModal.style.display = 'flex';
+setupOptionGroup('grpTime', val => configDuration = parseInt(val, 10));
+setupOptionGroup('grpDiff', val => configDiff = val);
+setupOptionGroup('grpSpeed', val => configSpeed = parseFloat(val));
+setupOptionGroup('grpSound', val => {
+  audioEnabled = (val === 'on');
+  updateSoundUI();
 });
 
-function startNewGame() {
-  isGameOver = false;
-  isPaused = false;
+function updateSoundUI() {
+  const btn = document.getElementById('btnAudioToggle');
+  if (audioEnabled) {
+    btn.innerText = "🔊 音效：開";
+    btn.className = "btn-top";
+  } else {
+    btn.innerText = "🔇 音效：關";
+    btn.className = "btn-top sound-off";
+  }
+}
+document.getElementById('btnAudioToggle').addEventListener('click', () => {
+  audioEnabled = !audioEnabled;
+  updateSoundUI();
+  document.querySelectorAll('#grpSound .opt-btn').forEach(btn => {
+    if ((btn.dataset.val === 'on' && audioEnabled) || (btn.dataset.val === 'off' && !audioEnabled)) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  });
+});
+
+document.getElementById('btnStartGame').addEventListener('click', () => {
+  document.getElementById('menuModal').style.display = 'none';
+  document.getElementById('awardModal').style.display = 'none';
+  startGame();
+});
+
+document.getElementById('btnOpenMenu').addEventListener('click', () => {
+  pauseToMenu();
+});
+
+document.getElementById('btnReturnMenu').addEventListener('click', () => {
+  document.getElementById('awardModal').style.display = 'none';
+  document.getElementById('menuModal').style.display = 'flex';
+  isPlaying = false;
+  clearInterval(gameTimer);
+});
+
+function pauseToMenu() {
+  isPlaying = false;
+  clearInterval(gameTimer);
+  document.getElementById('menuModal').style.display = 'flex';
+}
+
+function startGame() {
   score = 0;
   streak = 0;
   maxStreak = 0;
   correctCount = 0;
-  currentSpeed = baseSpeed;
-  roundHistoryMissed = [];
-  missedQuestionsPool = [];
-  document.getElementById('scoreDisplay').innerText = `⭐ 得分: 0`;
-  document.getElementById('comboBadge').innerText = `連擊: 0`;
-  document.getElementById('timerDisplay').style.color = '#e17055';
+  timeLeft = configDuration;
+  isPlaying = true;
+  balls = [];
+  reviewPause.active = false;
 
-  startTimer();
-  setupNewRound();
+  document.getElementById('scoreLabel').innerText = `⭐ 得分: 0`;
+  document.getElementById('streakLabel').innerText = `🔥 連擊: 0`;
+  document.getElementById('timerLabel').innerText = `⏳ 倒數: ${timeLeft}s`;
+
+  player.x = 240;
+  player.y = GROUND_Y - player.radius;
+  player.vy = 0;
+
+  startClock();
+  newRound();
 }
 
-function startTimer() {
-  clearInterval(timerInterval);
-  timeLeft = 60;
-  document.getElementById('timerDisplay').innerText = `⏳ 倒數: ${timeLeft}s`;
-
-  timerInterval = setInterval(() => {
-    if (!isPaused && timeLeft > 0) {
+function startClock() {
+  clearInterval(gameTimer);
+  gameTimer = setInterval(() => {
+    // 當處於落地算式學習暫停時，倒數時間暫時凍結
+    if (isPlaying && !reviewPause.active && timeLeft > 0) {
       timeLeft--;
-      document.getElementById('timerDisplay').innerText = `⏳ 倒數: ${timeLeft}s`;
-      if (timeLeft <= 10) {
-        document.getElementById('timerDisplay').style.color = '#d63031';
+      document.getElementById('timerLabel').innerText = `⏳ 倒數: ${timeLeft}s`;
+      if (timeLeft <= 0) {
+        showAward();
       }
-    } else if (timeLeft <= 0) {
-      endGame();
     }
   }, 1000);
 }
 
-function resumeTimer() {
-  clearInterval(timerInterval);
-  timerInterval = setInterval(() => {
-    if (!isPaused && timeLeft > 0) {
-      timeLeft--;
-      document.getElementById('timerDisplay').innerText = `⏳ 倒數: ${timeLeft}s`;
-      if (timeLeft <= 10) {
-        document.getElementById('timerDisplay').style.color = '#d63031';
-      }
-    } else if (timeLeft <= 0) {
-      endGame();
-    }
-  }, 1000);
-}
+function showAward() {
+  isPlaying = false;
+  clearInterval(gameTimer);
+  Sound.fanfare();
 
-function endGame() {
-  clearInterval(timerInterval);
-  isGameOver = true;
-  isPaused = true;
-  roundActive = false;
-  AudioEngine.playFanfare();
+  const ratio = configDuration / 60;
+  const gold = Math.round(80 * ratio);
+  const silver = Math.round(50 * ratio);
+  const bronze = Math.round(25 * ratio);
 
   let medal = "🥉";
-  let title = "烘焙見習生！";
-  if (score >= 80) {
+  let title = "超級球美味銅牌！";
+  if (score >= gold) {
     medal = "🥇";
-    title = "五星特級神廚金牌！";
-  } else if (score >= 50) {
+    title = "大師球特級神廚金牌！";
+  } else if (score >= silver) {
     medal = "🥈";
-    title = "資深星級主廚銀牌！";
-  } else if (score >= 25) {
+    title = "高級球星級主廚銀牌！";
+  } else if (score >= bronze) {
     medal = "🥉";
-    title = "烘焙美味銅牌！";
+    title = "超級球美味銅牌！";
   } else {
     medal = "🏅";
-    title = "活力廚房小學徒！";
+    title = "精靈球廚房見習徽章！";
   }
 
-  document.getElementById('medalIcon').innerText = medal;
-  document.getElementById('medalTitle').innerText = title;
-  document.getElementById('finalScoreText').innerText = `總得分: ${score} 分`;
-  document.getElementById('finalStatsText').innerText = `答對: ${correctCount} 題 ｜ 最高連擊: ${maxStreak} 次`;
-
-  const missedBox = document.getElementById('missedBox');
-  if (roundHistoryMissed.length > 0) {
-    const uniqueMissed = [...new Set(roundHistoryMissed)];
-    missedBox.innerHTML = `⚠️ 建議多加強的弱點題型：<br>${uniqueMissed.join('、 ')}`;
-    missedBox.style.display = 'block';
-  } else {
-    missedBox.style.display = 'none';
-  }
-
-  resultModal.style.display = 'flex';
+  document.getElementById('awardMedal').innerText = medal;
+  document.getElementById('awardTitle').innerText = title;
+  document.getElementById('awardScore').innerText = `總得分: ${score} 分`;
+  document.getElementById('awardDetails').innerText = `答對題數: ${correctCount} 題 ｜ 最高連擊: ${maxStreak} 次`;
+  document.getElementById('awardModal').style.display = 'flex';
 }
 
-/* ========================
-   4. 題目生成與連擊機制
-   ======================== */
-function setupNewRound() {
-  if (isGameOver || isPaused) return;
-
-  // 弱點優先重複
-  if (missedQuestionsPool.length > 0 && Math.random() < 0.45) {
-    const pick = missedQuestionsPool.shift();
-    num1 = pick.a;
-    num2 = pick.b;
-  } else {
-    if (selectedDifficulty === 'easy') {
-      const easyDigits = [2, 3, 4, 5];
-      num1 = easyDigits[Math.floor(Math.random() * easyDigits.length)];
-      num2 = Math.floor(Math.random() * 8) + 2;
-    } else if (selectedDifficulty === 'boss') {
-      const bossDigits = [6, 7, 8, 9];
-      num1 = bossDigits[Math.floor(Math.random() * bossDigits.length)];
-      num2 = Math.floor(Math.random() * 8) + 2;
-    } else {
-      num1 = Math.floor(Math.random() * 8) + 2;
-      num2 = Math.floor(Math.random() * 8) + 2;
-    }
-  }
-
-  rightAnswer = num1 * num2;
-  document.getElementById('mathQuestion').innerText = `${num1} × ${num2} = ?`;
-
-  // 連擊微幅提速獎勵
-  const speedBonus = Math.min(0.35, Math.floor(streak / 3) * 0.08);
-  currentSpeed = baseSpeed + speedBonus;
-
-  npcChef.serveAnimationTimer = 25;
-  AudioEngine.playServe();
-
-  const answers = [rightAnswer];
-  while (answers.length < 3) {
-    const offset = (Math.floor(Math.random() * 4) + 1) * (Math.random() < 0.5 ? 1 : -1);
-    const fake = Math.max(4, rightAnswer + offset);
-    if (!answers.includes(fake)) answers.push(fake);
-  }
-  answers.sort(() => Math.random() - 0.5);
-
-  foodBalls = [];
-  const targetXPositions = [120, 240, 360];
-  targetXPositions.sort(() => Math.random() - 0.5);
-
-  for (let i = 0; i < 3; i++) {
-    foodBalls.push(new FloatAnswerBall(
-      targetXPositions[i],
-      answers[i],
-      answers[i] === rightAnswer,
-      i * 6
-    ));
-  }
-  roundActive = true;
-}
-
-/* ========================
-   5. 操作監聽 (鍵盤 + 觸控)
-   ======================== */
-window.addEventListener('keydown', (e) => {
-  AudioEngine.init();
-  if (e.code === 'KeyA' || e.code === 'ArrowLeft') input.left = true;
-  if (e.code === 'KeyD' || e.code === 'ArrowRight') input.right = true;
-  if (e.code === 'KeyW' || e.code === 'ArrowUp' || e.code === 'Space') input.jump = true;
-});
-window.addEventListener('keyup', (e) => {
-  if (e.code === 'KeyA' || e.code === 'ArrowLeft') input.left = false;
-  if (e.code === 'KeyD' || e.code === 'ArrowRight') input.right = false;
-  if (e.code === 'KeyW' || e.code === 'ArrowUp' || e.code === 'Space') input.jump = false;
-});
-
-function bindTouchButton(elementId, actionKey) {
-  const btn = document.getElementById(elementId);
-  const startHandler = (e) => {
-    e.preventDefault();
-    AudioEngine.init();
-    input[actionKey] = true;
-    btn.classList.add('active');
-  };
-  const endHandler = (e) => {
-    e.preventDefault();
-    input[actionKey] = false;
-    btn.classList.remove('active');
-  };
-  btn.addEventListener('touchstart', startHandler, { passive: false });
-  btn.addEventListener('touchend', endHandler, { passive: false });
-  btn.addEventListener('touchcancel', endHandler, { passive: false });
-  btn.addEventListener('mousedown', startHandler);
-  btn.addEventListener('mouseup', endHandler);
-  btn.addEventListener('mouseleave', endHandler);
-}
-
-bindTouchButton('btnLeft', 'left');
-bindTouchButton('btnRight', 'right');
-bindTouchButton('btnJump', 'jump');
-
-canvas.addEventListener('touchstart', (e) => {
-  AudioEngine.init();
-  const rect = canvas.getBoundingClientRect();
-  const scaleX = canvas.width / rect.width;
-  const touchX = (e.touches[0].clientX - rect.left) * scaleX;
-  if (touchX < player.x - 15) {
-    input.left = true;
-    input.right = false;
-  } else if (touchX > player.x + 15 && touchX < 460) {
-    input.right = true;
-    input.left = false;
-  }
-}, { passive: true });
-
-canvas.addEventListener('touchend', () => {
-  input.left = false;
-  input.right = false;
-}, { passive: true });
-
-/* ========================
-   6. 角色與球體
-   ======================== */
-class CutePikachuChef {
-  constructor(x, y) {
-    this.x = x;
-    this.y = y;
-    this.vy = 0;
-    this.radius = 32;
-    this.isGrounded = true;
-    this.blinkTimer = 0;
-  }
-
+// ==================== 角色與物體 ====================
+const player = {
+  x: 240, y: GROUND_Y - 32, vy: 0, radius: 32, grounded: true,
   update() {
-    if (isPaused) return;
+    if (!isPlaying || reviewPause.active) return;
+    if (keys.left) this.x -= 7.2;
+    if (keys.right) this.x += 7.2;
 
-    if (input.left) this.x -= 5.5;
-    if (input.right) this.x += 5.5;
-
-    if (input.jump && this.isGrounded) {
-      this.vy = -9.2;
-      this.isGrounded = false;
-      AudioEngine.playJump();
+    if (keys.jump && this.grounded) {
+      this.vy = -9.6;
+      this.grounded = false;
+      Sound.jump();
     }
 
     this.vy += 0.38;
@@ -764,428 +414,360 @@ class CutePikachuChef {
     if (this.y >= GROUND_Y - this.radius) {
       this.y = GROUND_Y - this.radius;
       this.vy = 0;
-      this.isGrounded = true;
+      this.grounded = true;
     }
 
-    if (this.x - this.radius < 15) this.x = 15 + this.radius;
+    if (this.x - this.radius < 20) this.x = 20 + this.radius;
     if (this.x + this.radius > 450) this.x = 450 - this.radius;
-
-    this.blinkTimer++;
-  }
-
+  },
   draw() {
+    const cx = this.x, cy = this.y;
     ctx.save();
-    const cx = this.x;
-    const cy = this.y;
-
-    ctx.fillStyle = '#f6b93b';
-    ctx.strokeStyle = '#2d3436';
-    ctx.lineWidth = 3;
-
     // 耳朵
-    ctx.beginPath();
-    ctx.ellipse(cx - 18, cy - 35, 8, 22, -0.4, 0, Math.PI * 2);
-    ctx.fill(); ctx.stroke();
-    ctx.beginPath();
-    ctx.ellipse(cx + 18, cy - 35, 8, 22, 0.4, 0, Math.PI * 2);
-    ctx.fill(); ctx.stroke();
-
+    ctx.fillStyle = '#f6b93b'; ctx.strokeStyle = '#2d3436'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.ellipse(cx - 18, cy - 35, 8, 22, -0.4, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(cx + 18, cy - 35, 8, 22, 0.4, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
     // 耳尖
     ctx.fillStyle = '#2d3436';
-    ctx.beginPath();
-    ctx.ellipse(cx - 24, cy - 50, 5, 8, -0.4, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.ellipse(cx + 24, cy - 50, 5, 8, 0.4, 0, Math.PI * 2);
-    ctx.fill();
-
-    // 身體
-    ctx.beginPath();
-    ctx.arc(cx, cy, this.radius, 0, Math.PI * 2);
-    ctx.fillStyle = '#f6b93b';
-    ctx.fill();
-    ctx.stroke();
-
-    // 圍裙
-    ctx.beginPath();
-    ctx.arc(cx, cy + 8, this.radius * 0.72, 0, Math.PI);
-    ctx.fillStyle = '#ffffff';
-    ctx.fill();
-    ctx.strokeStyle = '#dcdde1';
-    ctx.lineWidth = 2;
-    ctx.stroke();
-
-    // 眼睛
-    const isBlinking = (this.blinkTimer % 180 > 172);
-    if (!isBlinking) {
-      ctx.fillStyle = '#2d3436';
-      ctx.beginPath();
-      ctx.arc(cx - 10, cy - 6, 5, 0, Math.PI * 2);
-      ctx.arc(cx + 10, cy - 6, 5, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = '#ffffff';
-      ctx.beginPath();
-      ctx.arc(cx - 12, cy - 8, 2, 0, Math.PI * 2);
-      ctx.arc(cx + 8, cy - 8, 2, 0, Math.PI * 2);
-      ctx.fill();
-    } else {
-      ctx.strokeStyle = '#2d3436';
-      ctx.lineWidth = 2.5;
-      ctx.beginPath();
-      ctx.arc(cx - 10, cy - 5, 4, Math.PI, 0);
-      ctx.arc(cx + 10, cy - 5, 4, Math.PI, 0);
-      ctx.stroke();
-    }
-
-    // 腮紅與嘴巴
+    ctx.beginPath(); ctx.ellipse(cx - 24, cy - 50, 5, 8, -0.4, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(cx + 24, cy - 50, 5, 8, 0.4, 0, Math.PI * 2); ctx.fill();
+    // 身體與圍裙
+    ctx.beginPath(); ctx.arc(cx, cy, this.radius, 0, Math.PI * 2);
+    ctx.fillStyle = '#f6b93b'; ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx, cy + 8, this.radius * 0.72, 0, Math.PI);
+    ctx.fillStyle = '#ffffff'; ctx.fill();
+    // 眼睛腮紅
+    ctx.fillStyle = '#2d3436';
+    ctx.beginPath(); ctx.arc(cx - 10, cy - 6, 5, 0, Math.PI * 2); ctx.arc(cx + 10, cy - 6, 5, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = '#ff7675';
-    ctx.beginPath();
-    ctx.arc(cx - 20, cy + 3, 6.5, 0, Math.PI * 2);
-    ctx.arc(cx + 20, cy + 3, 6.5, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.fillStyle = '#e17055';
-    ctx.beginPath();
-    ctx.arc(cx, cy - 1, 2, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(cx, cy + 4, 3.5, 0, Math.PI);
-    ctx.stroke();
-
-    // 帽子
-    ctx.fillStyle = '#ffffff';
-    ctx.strokeStyle = '#2d3436';
-    ctx.lineWidth = 2.5;
-    ctx.fillRect(cx - 16, cy - this.radius - 12, 32, 14);
-    ctx.strokeRect(cx - 16, cy - this.radius - 12, 32, 14);
-    ctx.beginPath();
-    ctx.arc(cx, cy - this.radius - 18, 18, 0, Math.PI * 2);
-    ctx.arc(cx - 14, cy - this.radius - 14, 13, 0, Math.PI * 2);
-    ctx.arc(cx + 14, cy - this.radius - 14, 13, 0, Math.PI * 2);
-    ctx.fill();
-
+    ctx.beginPath(); ctx.arc(cx - 20, cy + 3, 6, 0, Math.PI * 2); ctx.arc(cx + 20, cy + 3, 6, 0, Math.PI * 2); ctx.fill();
+    // 廚師帽
+    ctx.fillStyle = '#ffffff'; ctx.strokeStyle = '#2d3436'; ctx.lineWidth = 2.5;
+    ctx.fillRect(cx - 16, cy - this.radius - 12, 32, 14); ctx.strokeRect(cx - 16, cy - this.radius - 12, 32, 14);
+    ctx.beginPath(); ctx.arc(cx, cy - this.radius - 18, 18, 0, Math.PI * 2); ctx.fill();
     ctx.restore();
   }
-}
+};
 
-class CuteEnemyNPC {
-  constructor(x, y) {
-    this.x = x;
-    this.y = y;
-    this.radius = 32;
-    this.animTimer = 0;
-    this.serveAnimationTimer = 0;
-  }
-
-  update() {
-    if (isPaused) return;
-    this.animTimer += 0.05;
-    if (this.serveAnimationTimer > 0) this.serveAnimationTimer--;
-  }
-
+const enemy = {
+  x: 710, y: GROUND_Y - 32, radius: 32,
   draw() {
+    const cx = this.x, cy = this.y;
     ctx.save();
-    const bounceY = Math.sin(this.animTimer) * 3;
-    const cx = this.x;
-    const cy = this.y + bounceY;
-
-    ctx.fillStyle = '#cd84f1';
-    ctx.strokeStyle = '#2d3436';
-    ctx.lineWidth = 3;
-
-    ctx.beginPath();
-    ctx.ellipse(cx - 20, cy - 32, 9, 24, -0.5, 0, Math.PI * 2);
-    ctx.fill(); ctx.stroke();
-    ctx.beginPath();
-    ctx.ellipse(cx + 20, cy - 32, 9, 24, 0.5, 0, Math.PI * 2);
-    ctx.fill(); ctx.stroke();
-
-    ctx.beginPath();
-    ctx.arc(cx, cy, this.radius, 0, Math.PI * 2);
-    ctx.fillStyle = '#e056fd';
-    ctx.fill();
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.arc(cx, cy + 8, this.radius * 0.72, 0, Math.PI);
-    ctx.fillStyle = '#ffffff';
-    ctx.fill();
-    ctx.strokeStyle = '#dcdde1';
-    ctx.lineWidth = 2;
-    ctx.stroke();
-
-    ctx.strokeStyle = '#2d3436';
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.arc(cx - 10, cy - 4, 5, Math.PI, 0);
-    ctx.arc(cx + 10, cy - 4, 5, Math.PI, 0);
-    ctx.stroke();
-
+    ctx.fillStyle = '#cd84f1'; ctx.strokeStyle = '#2d3436'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.ellipse(cx - 20, cy - 32, 9, 24, -0.5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(cx + 20, cy - 32, 9, 24, 0.5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx, cy, this.radius, 0, Math.PI * 2);
+    ctx.fillStyle = '#e056fd'; ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx, cy + 8, this.radius * 0.72, 0, Math.PI);
+    ctx.fillStyle = '#ffffff'; ctx.fill();
+    ctx.strokeStyle = '#2d3436'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(cx - 10, cy - 4, 5, Math.PI, 0); ctx.arc(cx + 10, cy - 4, 5, Math.PI, 0); ctx.stroke();
     ctx.fillStyle = '#ff9ff3';
-    ctx.beginPath();
-    ctx.arc(cx - 18, cy + 5, 6, 0, Math.PI * 2);
-    ctx.arc(cx + 18, cy + 5, 6, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.fillStyle = '#e056fd';
-    ctx.strokeStyle = '#2d3436';
-    ctx.lineWidth = 2.5;
-    ctx.beginPath();
-    if (this.serveAnimationTimer > 0) {
-      ctx.ellipse(cx - 28, cy - 15, 8, 16, -0.8, 0, Math.PI * 2);
-    } else {
-      ctx.ellipse(cx - 26, cy + 12, 7, 12, 0.2, 0, Math.PI * 2);
-    }
-    ctx.fill(); ctx.stroke();
-
-    ctx.fillStyle = '#ffffff';
-    ctx.strokeStyle = '#2d3436';
-    ctx.lineWidth = 2.5;
-    ctx.fillRect(cx - 15, cy - this.radius - 10, 30, 12);
-    ctx.strokeRect(cx - 15, cy - this.radius - 10, 30, 12);
-    ctx.beginPath();
-    ctx.arc(cx, cy - this.radius - 16, 17, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.fillStyle = '#ff4757';
-    ctx.beginPath();
-    ctx.arc(cx, cy - this.radius - 28, 5, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 12px "Microsoft JhengHei", Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText("甜點主廚", cx, cy + 16);
-
+    ctx.beginPath(); ctx.arc(cx - 18, cy + 5, 6, 0, Math.PI * 2); ctx.arc(cx + 18, cy + 5, 6, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#ffffff'; ctx.strokeStyle = '#2d3436'; ctx.lineWidth = 2.5;
+    ctx.fillRect(cx - 15, cy - this.radius - 10, 30, 12); ctx.strokeRect(cx - 15, cy - this.radius - 10, 30, 12);
+    ctx.beginPath(); ctx.arc(cx, cy - this.radius - 16, 17, 0, Math.PI * 2); ctx.fill();
     ctx.restore();
   }
-}
+};
 
-class FloatAnswerBall {
+class PokeBall {
   constructor(targetX, value, isCorrect, delay) {
-    this.startX = 710;
-    this.startY = 290;
-    this.x = this.startX;
-    this.y = this.startY;
+    this.x = 690;
+    this.y = 230;
+    this.targetX = targetX;
     this.value = value;
     this.isCorrect = isCorrect;
-    this.radius = 30;
-
+    this.radius = 33;
     this.delay = delay;
-    this.targetX = targetX;
-
-    const totalFrames = 130;
-    this.vx = (targetX - this.startX) / totalFrames;
-    this.vy = -7.8;
-
-    this.isHit = false;
+    this.vx = (targetX - 690) / 130;
+    this.vy = -4.2;
+    this.hit = false;
+    this.fading = false;
+    this.opacity = 1.0;
     this.landed = false;
-    this.floatTimer = 0;
+    this.bounce = 0;
   }
-
   update() {
-    if (isPaused) return;
-
+    if (!isPlaying || reviewPause.active) return;
     if (this.delay > 0) {
       this.delay--;
+      if (this.delay === 10) Sound.serve();
+      return;
+    }
+    if (this.fading) {
+      this.opacity -= 0.12;
+      this.y -= 0.5;
+      if (this.opacity <= 0) this.landed = true;
+      return;
+    }
+    if (this.hit) {
+      this.x += 8; this.y -= 10;
       return;
     }
 
-    if (this.isHit) {
-      this.y += this.vy * currentSpeed;
-      this.x += this.vx * currentSpeed;
-      this.vy += 0.4;
-      return;
-    }
-
-    this.floatTimer += 0.04;
-
-    let currentGravity = 0.16;
-    if (this.y < 220 && this.vy > -1) {
-      currentGravity = 0.045;
-    }
-
-    this.vy += currentGravity * currentSpeed;
-    this.x += this.vx * currentSpeed;
-    this.y += (this.vy + Math.sin(this.floatTimer) * 0.3) * currentSpeed;
+    const effectiveSpeed = configSpeed + Math.min(0.35, Math.floor(streak / 3) * 0.08);
+    this.vy += 0.12 * effectiveSpeed;
+    this.x += this.vx * effectiveSpeed;
+    this.y += this.vy * effectiveSpeed;
 
     if (this.y + this.radius >= GROUND_Y) {
       this.y = GROUND_Y - this.radius;
-      this.vy = 0;
-      this.vx = 0;
-      this.landed = true;
+      if (!this.isCorrect) {
+        this.fading = true; // 錯解球觸地立刻消散
+      } else {
+        if (configSpeed <= 0.35 && this.bounce < 2) {
+          this.bounce++;
+          this.vy = -3.8;
+          Sound.jump();
+        } else {
+          this.landed = true;
+        }
+      }
     }
   }
-
   draw() {
-    if (this.delay > 0) return;
-
+    if (this.delay > 0 || this.opacity <= 0) return;
     ctx.save();
-    ctx.beginPath();
-    ctx.ellipse(this.x, GROUND_Y, this.radius * 0.85, 7, 0, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(0,0,0,0.15)';
-    ctx.fill();
+    ctx.globalAlpha = this.opacity;
 
-    if (!this.landed && !this.isHit) {
+    if (!this.fading) {
       ctx.beginPath();
-      ctx.setLineDash([4, 4]);
-      ctx.moveTo(this.x, this.y + this.radius);
-      ctx.lineTo(this.x, GROUND_Y);
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
-      ctx.lineWidth = 2;
-      ctx.stroke();
-      ctx.setLineDash([]);
+      ctx.ellipse(this.x, GROUND_Y, this.radius * 0.85, 7, 0, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(0,0,0,0.18)'; ctx.fill();
     }
 
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-    ctx.fillStyle = '#fff475';
-    ctx.fill();
-    ctx.lineWidth = 3.5;
-    ctx.strokeStyle = '#ffa502';
-    ctx.stroke();
+    const cx = this.x, cy = this.y, r = this.radius;
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI);
+    ctx.fillStyle = '#f1f2f6'; ctx.fill();
+    ctx.beginPath(); ctx.arc(cx, cy, r, Math.PI, Math.PI * 2);
+    ctx.fillStyle = '#eb4d4b'; ctx.fill();
 
-    ctx.beginPath();
-    ctx.arc(this.x, this.y - this.radius + 2, 7, 0, Math.PI * 2);
-    ctx.fillStyle = '#ff4757';
-    ctx.fill();
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.strokeStyle = '#2d3436'; ctx.lineWidth = 3.5; ctx.stroke();
+    ctx.fillStyle = '#2d3436'; ctx.fillRect(cx - r + 1, cy - 3.5, (r * 2) - 2, 7);
 
-    ctx.fillStyle = '#2f3542';
-    ctx.font = 'bold 24px Arial, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(this.value, this.x, this.y + 2);
+    ctx.beginPath(); ctx.arc(cx, cy, 20, 0, Math.PI * 2);
+    ctx.fillStyle = '#2d3436'; ctx.fill();
+    ctx.beginPath(); ctx.arc(cx, cy, 17, 0, Math.PI * 2);
+    ctx.fillStyle = '#ffffff'; ctx.fill();
 
+    ctx.fillStyle = '#2d3436';
+    ctx.font = '900 23px Arial';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(this.value, cx, cy + 1.5);
     ctx.restore();
   }
 }
 
-const player = new CutePikachuChef(200, GROUND_Y - 32);
-const npcChef = new CuteEnemyNPC(710, GROUND_Y - 32);
+// ==================== 發球與判定 ====================
+function newRound() {
+  if (!isPlaying) return;
 
-function checkCollisions() {
-  if (!roundActive || isGameOver || isPaused) return;
+  if (configDiff === 'easy') {
+    const easy = [2, 3, 4, 5];
+    currentA = easy[Math.floor(Math.random() * easy.length)];
+  } else if (configDiff === 'boss') {
+    const boss = [6, 7, 8, 9];
+    currentA = boss[Math.floor(Math.random() * boss.length)];
+  } else {
+    currentA = Math.floor(Math.random() * 8) + 2;
+  }
+  currentB = Math.floor(Math.random() * 8) + 2;
+  rightAns = currentA * currentB;
 
-  for (let ball of foodBalls) {
-    if (ball.delay > 0 || ball.isHit) continue;
+  document.getElementById('questionLabel').innerText = `${currentA} × ${currentB} = ?`;
 
-    const headX = player.x;
-    const headY = player.y - 20;
+  const options = [rightAns];
+  while (options.length < 3) {
+    const offset = (Math.floor(Math.random() * 4) + 1) * (Math.random() < 0.5 ? 1 : -1);
+    const fake = Math.max(4, rightAns + offset);
+    if (!options.includes(fake)) options.push(fake);
+  }
+  options.sort(() => Math.random() - 0.5);
 
-    const dx = ball.x - headX;
-    const dy = ball.y - headY;
+  balls = [];
+  const targetX = [175, 240, 305];
+  targetX.sort(() => Math.random() - 0.5);
+
+  const delayStep = (configSpeed <= 0.3) ? 120 : Math.round(Math.max(75, 28 / configSpeed));
+
+  for (let i = 0; i < 3; i++) {
+    balls.push(new PokeBall(targetX[i], options[i], options[i] === rightAns, i * delayStep));
+  }
+}
+
+function checkHit() {
+  if (!isPlaying || reviewPause.active) return;
+
+  for (let b of balls) {
+    if (b.delay > 0 || b.hit || b.fading || b.landed) continue;
+
+    const dx = b.x - player.x;
+    const dy = b.y - (player.y - 20);
     const dist = Math.hypot(dx, dy);
 
-    if (dist < ball.radius + 40) {
-      ball.isHit = true;
-
-      if (ball.isCorrect) {
+    if (dist < b.radius + 55) {
+      b.hit = true;
+      if (b.isCorrect) {
         score += 10;
         streak += 1;
         correctCount += 1;
         if (streak > maxStreak) maxStreak = streak;
 
-        ball.vx = 7;
-        ball.vy = -12;
-        
-        let speedNotice = streak >= 3 ? " ⚡連擊加速！" : "";
-        feedbackText = `🎉 答對了！${num1} × ${num2} = ${rightAnswer}${speedNotice}`;
-        feedbackColor = "#10ac84";
-
-        AudioEngine.playCorrect();
-        document.getElementById('scoreDisplay').innerText = `⭐ 得分: ${score}`;
-        document.getElementById('comboBadge').innerText = `連擊: ${streak}`;
+        Sound.correct();
+        feedback = { text: `🎉 正確！${currentA} × ${currentB} = ${rightAns}`, color: "#10ac84", timer: 70 };
+        balls.forEach(other => { if (!other.isCorrect) other.fading = true; });
+        setTimeout(newRound, 1500);
       } else {
-        missedQuestionsPool.push({ a: num1, b: num2 });
-        roundHistoryMissed.push(`${num1} × ${num2} = ${rightAnswer}`);
-
         streak = 0;
-        currentSpeed = baseSpeed;
-        ball.vx = -3;
-        ball.vy = -5;
-        feedbackText = `❌ 哎呀！算錯囉，不是 ${ball.value}`;
-        feedbackColor = "#ee5253";
-
-        AudioEngine.playWrong();
-        document.getElementById('comboBadge').innerText = `連擊: 0`;
+        Sound.wrong();
+        feedback = { text: `❌ 算錯囉，不是 ${b.value}`, color: "#ee5253", timer: 70 };
+        setTimeout(newRound, 1500);
       }
-
-      feedbackTimer = 90;
-      roundActive = false;
-      setTimeout(setupNewRound, 1800);
+      document.getElementById('scoreLabel').innerText = `⭐ 得分: ${score}`;
+      document.getElementById('streakLabel').innerText = `🔥 連擊: ${streak}`;
       return;
     }
   }
 
-  const allEnded = foodBalls.every(b => b.delay === 0 && (b.landed || b.isHit));
-  if (allEnded && roundActive) {
-    missedQuestionsPool.push({ a: num1, b: num2 });
-    roundHistoryMissed.push(`${num1} × ${num2} = ${rightAnswer}`);
-
+  // ★ 核心改動：正解球落地時靜音，啟動「暫停 3 秒學習算式卡」
+  const rightBall = balls.find(b => b.isCorrect);
+  if (rightBall && rightBall.landed && !rightBall.hit) {
     streak = 0;
-    currentSpeed = baseSpeed;
-    feedbackText = `⏰ 落地了！正解是 ${rightAnswer}`;
-    feedbackColor = "#e67e22";
-    feedbackTimer = 90;
-    AudioEngine.playWrong();
-    document.getElementById('comboBadge').innerText = `連擊: 0`;
-    roundActive = false;
-    setTimeout(setupNewRound, 1600);
+    document.getElementById('streakLabel').innerText = `🔥 連擊: 0`;
+
+    // 啟動 3 秒 (以 60 FPS 計為 180 幀) 暫停複習
+    reviewPause.active = true;
+    reviewPause.remainingFrames = 180;
+    reviewPause.textFormula = `${currentA} × ${currentB} = ${rightAns}`;
+
+    // 清空球體，等待 3 秒結束後自動接續下一回合
+    balls = [];
   }
 }
 
-function gameLoop() {
+// ==================== 按鍵與觸控監聽 ====================
+window.addEventListener('keydown', (e) => {
+  if (e.code === 'KeyA' || e.code === 'ArrowLeft') { keys.left = true; e.preventDefault(); }
+  if (e.code === 'KeyD' || e.code === 'ArrowRight') { keys.right = true; e.preventDefault(); }
+  if (e.code === 'KeyW' || e.code === 'ArrowUp' || e.code === 'Space') { keys.jump = true; e.preventDefault(); }
+}, { passive: false });
+
+window.addEventListener('keyup', (e) => {
+  if (e.code === 'KeyA' || e.code === 'ArrowLeft') keys.left = false;
+  if (e.code === 'KeyD' || e.code === 'ArrowRight') keys.right = false;
+  if (e.code === 'KeyW' || e.code === 'ArrowUp' || e.code === 'Space') keys.jump = false;
+});
+
+function bindBtn(id, prop) {
+  const btn = document.getElementById(id);
+  const start = (e) => { e.preventDefault(); keys[prop] = true; };
+  const end = (e) => { e.preventDefault(); keys[prop] = false; };
+  btn.addEventListener('touchstart', start, { passive: false });
+  btn.addEventListener('touchend', end, { passive: false });
+  btn.addEventListener('mousedown', start);
+  btn.addEventListener('mouseup', end);
+  btn.addEventListener('mouseleave', end);
+}
+bindBtn('btnLeft', 'left');
+bindBtn('btnRight', 'right');
+bindBtn('btnJump', 'jump');
+
+canvas.addEventListener('touchstart', (e) => {
+  const rect = canvas.getBoundingClientRect();
+  const tx = (e.touches[0].clientX - rect.left) * (canvas.width / rect.width);
+  if (tx < player.x - 20) { keys.left = true; keys.right = false; }
+  else if (tx > player.x + 20) { keys.right = true; keys.left = false; }
+}, { passive: true });
+canvas.addEventListener('touchend', () => { keys.left = false; keys.right = false; }, { passive: true });
+
+// ==================== 主渲染迴圈 ====================
+function loop() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  ctx.fillStyle = '#ffeaa7';
-  ctx.fillRect(0, 0, canvas.width, GROUND_Y);
+  // 地面與球網
+  ctx.fillStyle = '#6ab04c'; ctx.fillRect(0, GROUND_Y, canvas.width, canvas.height - GROUND_Y);
+  ctx.fillStyle = '#badc58'; ctx.fillRect(0, GROUND_Y, canvas.width, 10);
+  ctx.fillStyle = '#dcdde1'; ctx.fillRect(520, 240, 12, GROUND_Y - 240);
+  ctx.fillStyle = '#eb4d4b'; ctx.fillRect(514, 235, 24, 10);
 
-  ctx.strokeStyle = '#f8e398';
-  ctx.lineWidth = 1;
-  for (let x = 0; x < canvas.width; x += 45) {
-    ctx.beginPath();
-    ctx.moveTo(x, 0); ctx.lineTo(x, GROUND_Y);
-    ctx.stroke();
-  }
-
-  ctx.fillStyle = '#6ab04c';
-  ctx.fillRect(0, GROUND_Y, canvas.width, canvas.height - GROUND_Y);
-  ctx.fillStyle = '#badc58';
-  ctx.fillRect(0, GROUND_Y, canvas.width, 10);
-
-  ctx.fillStyle = '#dcdde1';
-  ctx.fillRect(520, 240, 12, GROUND_Y - 240);
-  ctx.fillStyle = '#eb4d4b';
-  ctx.fillRect(514, 235, 24, 10);
-
+  // 實體更新與繪製
   player.update();
   player.draw();
+  enemy.draw();
 
-  npcChef.update();
-  npcChef.draw();
+  for (let b of balls) {
+    b.update();
+    b.draw();
+  }
+  checkHit();
 
-  for (let ball of foodBalls) {
-    ball.update();
-    ball.draw();
+  // ★ 繪製 3 秒算式複習卡
+  if (reviewPause.active) {
+    reviewPause.remainingFrames--;
+
+    ctx.save();
+    // 半透明背景聚焦卡片
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // 中央白色教學卡
+    const boxW = 540, boxH = 150;
+    const boxX = (canvas.width - boxW) / 2;
+    const boxY = (canvas.height - boxH) / 2 - 20;
+
+    ctx.fillStyle = '#ffffff';
+    ctx.strokeStyle = '#f39c12';
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.roundRect(boxX, boxY, boxW, boxH, 20);
+    ctx.fill();
+    ctx.stroke();
+
+    // 標題小字
+    ctx.fillStyle = '#d35400';
+    ctx.font = 'bold 20px "Microsoft JhengHei", Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText("💡 記起來喔！完整算式與解答", canvas.width / 2, boxY + 40);
+
+    // 乘法大字解答
+    ctx.fillStyle = '#c0392b';
+    ctx.font = '900 46px Arial, "Microsoft JhengHei"';
+    ctx.fillText(reviewPause.textFormula, canvas.width / 2, boxY + 95);
+
+    // 倒數小秒數提示
+    const secLeft = Math.ceil(reviewPause.remainingFrames / 60);
+    ctx.fillStyle = '#7f8c8d';
+    ctx.font = 'bold 14px Arial';
+    ctx.fillText(`即將發下一球... (${secLeft}s)`, canvas.width / 2, boxY + 130);
+
+    ctx.restore();
+
+    // 3 秒倒數完畢，解除暫停並發出下一題
+    if (reviewPause.remainingFrames <= 0) {
+      reviewPause.active = false;
+      newRound();
+    }
   }
 
-  checkCollisions();
-
-  if (feedbackTimer > 0) {
-    feedbackTimer--;
+  // 即時回饋文字
+  if (feedback.timer > 0 && !reviewPause.active) {
+    feedback.timer--;
     ctx.save();
     ctx.font = 'bold 26px "Microsoft JhengHei", Arial';
-    ctx.fillStyle = feedbackColor;
+    ctx.fillStyle = feedback.color;
     ctx.textAlign = 'center';
-    ctx.fillText(feedbackText, canvas.width / 2, 75);
+    ctx.fillText(feedback.text, canvas.width / 2, 75);
     ctx.restore();
   }
 
-  requestAnimationFrame(gameLoop);
+  requestAnimationFrame(loop);
 }
 
-// 預先啟動畫面繪製（此時停留在準備暫停面板，不扣時間也不發球）
-gameLoop();
+// 啟動主渲染，等待選單點擊開始
+loop();
 </script>
 </body>
 </html>
